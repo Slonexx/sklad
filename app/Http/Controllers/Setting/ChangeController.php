@@ -21,7 +21,7 @@ class ChangeController extends Controller
         try {
             $Client = new KassClient($accountId);
             if ($SettingBD->authtoken != null){
-                $ArrayKassa = $Client->apiCashBoxes();
+                $ArrayKassa = $Client->cashbox($SettingBD->profile_id);
             }
             else  return to_route('errorSetting', [
                     'accountId' => $accountId,
@@ -36,14 +36,13 @@ class ChangeController extends Controller
             );
         }
 
-        $kassa = $SettingBD->CashboxUniqueNumber;
-        //dd($ArrayKassa);
+       // dd(json_decode($ArrayKassa->getBody()->getContents())->data);
         return view('main.change', [
             'accountId' => $accountId,
             'isAdmin' => $isAdmin,
 
-            'ArrayKassa'=> $ArrayKassa,
-            'kassa' => $kassa,
+            'ArrayKassa'=> json_decode($ArrayKassa->getBody()->getContents())->data,
+            'kassa' => $SettingBD->cashbox_id,
         ]);
 
     }
@@ -53,18 +52,22 @@ class ChangeController extends Controller
     {
         $Client = new KassClient($accountId);
         try {
-            $body = $Client->MoneyOperation($request->CashboxUniqueNumber, $request->OperationType, $request->Sum );
-            if (property_exists($body, "Errors")) {
-                return [
-                    'statusCode' => 500,
-                    'message' => $body->Errors[0]->Text,
-                ];
-            }
+
+            $Client->moneyMovement($request->cashbox_id, [
+                'type' => $request->OperationType,
+                'sum' => $request->Sum
+            ]);
+
+            $body = $Client->moneyMovement($request->cashbox_id, [
+                'type' => 0,
+                'sum' => 0
+            ]);
+
             $message = "";
             if ($request->OperationType == 1){
-                $message = "Изъятие из кассу наличных на сумму: ".$request->Sum.' '.PHP_EOL." Наличных осталось в кассе: ".$body->Data->Sum;
+                $message = "Изъятие из кассу наличных на сумму: ".$request->Sum.' '.PHP_EOL." Наличных осталось в кассе: ".json_decode($body->getBody()->getContents())->data->money_movement->cashbox->balance / 100 ;
             } elseif ($request->OperationType == 0) {
-                $message = "Внесение в кассу наличных на сумму: ".$request->Sum.' '.PHP_EOL." Наличных осталось в кассе: ".$body->Data->Sum;;
+                $message = "Внесение в кассу наличных на сумму: ".$request->Sum.' '.PHP_EOL." Наличных осталось в кассе: ".json_decode($body->getBody()->getContents())->data->money_movement->cashbox->balance / 100;
             }
 
             return [
@@ -72,7 +75,13 @@ class ChangeController extends Controller
                 'message' => $message,
             ];
         } catch (BadResponseException $e){
-            return [
+            $body = json_decode(($e->getResponse()->getBody()->getContents()));
+            if (property_exists($body, 'message')){
+                return [
+                    'statusCode' => 500,
+                    'message' => $body->message,
+                ];
+            } else return [
                 'statusCode' => 500,
                 'message' => $e->getMessage(),
             ];
@@ -84,20 +93,21 @@ class ChangeController extends Controller
     {
         $Client = new KassClient($accountId);
         try {
-            $body = $Client->MoneyOperation($request->CashboxUniqueNumber, 0, 0 );
-            if (property_exists($body, "Errors")) {
-                return [
-                    'statusCode' => 500,
-                    'message' => $body->Errors[0]->Text,
-                ];
-            }
+            $body = $Client->moneyMovement($request->cashbox_id, ['type'=>0, 'sum'=>0]);
 
             return [
                 'statusCode' => 200,
-                'message' => $body->Data->Sum,
+                'message' => (float) json_decode($body->getBody()->getContents())->data->money_movement->cashbox->balance / 100,
             ];
+
         } catch (BadResponseException $e){
-            return [
+            $body = json_decode(($e->getResponse()->getBody()->getContents()));
+            if (property_exists($body, 'message')){
+                return [
+                    'statusCode' => 500,
+                    'message' => $body->message,
+                ];
+            } else return [
                 'statusCode' => 500,
                 'message' => $e->getMessage(),
             ];

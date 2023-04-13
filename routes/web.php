@@ -5,9 +5,11 @@ use App\Http\Controllers\Config\collectionOfPersonalController;
 use App\Http\Controllers\Config\DeleteVendorApiController;
 use App\Http\Controllers\initialization\indexController;
 use App\Http\Controllers\Setting\AccessController;
+use App\Http\Controllers\Setting\ChangeController;
 use App\Http\Controllers\Setting\CreateAuthTokenController;
 use App\Http\Controllers\Setting\DocumentController;
 use App\Http\Controllers\Setting\KassaController;
+use App\Http\Controllers\Setting\ReportController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -33,6 +35,15 @@ Route::post('/Setting/Document/{accountId}', [documentController::class, 'postDo
 
 Route::get('/Setting/Worker/{accountId}', [AccessController::class, 'getWorker'])->name('getWorker');
 Route::post('/Setting/Worker/{accountId}', [AccessController::class, 'postWorker']);
+
+
+Route::get('/kassa/change/{accountId}', [ChangeController::class, 'getChange']);
+Route::get('/kassa/MoneyOperation/{accountId}', [ChangeController::class, 'MoneyOperation']);
+Route::get('/kassa/MoneyOperation/viewCash/{accountId}', [ChangeController::class, 'viewCash']);
+Route::get('/kassa/XReport/{accountId}', [ReportController::class, 'XReport']);
+Route::get('/kassa/ZReport/{accountId}', [ReportController::class, 'ZReport']);
+
+
 
 
 

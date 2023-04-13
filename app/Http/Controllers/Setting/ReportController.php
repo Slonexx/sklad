@@ -10,50 +10,43 @@ use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
-    public function XReport(Request $request, $accountId): array
+    public function XReport(Request $request, $accountId): \Illuminate\Http\JsonResponse
     {
         $Client = new KassClient($accountId);
         try {
-            $body = $Client->XReport($request->CashboxUniqueNumber);
-            if (property_exists($body, "Errors")) {
-                return [
-                    'statusCode' => 500,
-                    'message' => $body->Errors[0]->Text,
-                ];
-            }
-
-            return ['Data'=> $body->Data, "statusCode"=>200];
+            $body = $Client->XReport($request->cashbox_id);
+            return response()->json(['Data'=> json_decode($body->getBody()->getContents())->data, "statusCode"=>200], 200);
         } catch (BadResponseException $e){
-            return [
+            $body = json_decode(($e->getResponse()->getBody()->getContents()));
+            if (property_exists($body, 'message')){
+                return response()->json([
+                    'statusCode' => 500,
+                    'message' => $body->message,
+                ], 500);
+            } else return response()->json([
                 'statusCode' => 500,
                 'message' => $e->getMessage(),
-            ];
+            ], 500);
         }
     }
 
-    public function ZReport(Request $request, $accountId): array
+    public function ZReport(Request $request, $accountId): \Illuminate\Http\JsonResponse
     {
         $Client = new KassClient($accountId);
-        $Setting = new getMainSettingBD($accountId);
-        $CashboxUniqueNumber = $request->CashboxUniqueNumber;
-        if ($CashboxUniqueNumber == null) {
-            $CashboxUniqueNumber = $Setting->CashboxUniqueNumber;
-        }
         try {
-            $body = $Client->XReport($CashboxUniqueNumber);
-            if (property_exists($body, "Errors")) {
-                return [
-                    'statusCode' => 500,
-                    'message' => $body->Errors[0]->Text,
-                ];
-            }
-
-            return ['Data'=> $body->Data, "statusCode"=>200];
+            $body = $Client->ZReport($request->cashbox_id);
+            return response()->json(['Data'=> json_decode($body->getBody()->getContents())->data, "statusCode"=>200], 200);
         } catch (BadResponseException $e){
-            return [
+            $body = json_decode(($e->getResponse()->getBody()->getContents()));
+            if (property_exists($body, 'message')){
+                return response()->json([
+                    'statusCode' => 500,
+                    'message' => $body->message,
+                ], 500);
+            } else return response()->json([
                 'statusCode' => 500,
                 'message' => $e->getMessage(),
-            ];
+            ], 500);
         }
     }
 }

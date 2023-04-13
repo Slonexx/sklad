@@ -78,7 +78,7 @@ class KassaController extends Controller
         //dd($request->all());
         $Setting = new getMainSettingBD($accountId);
         try {
-            DataBaseService::updateMainSetting($accountId,$Setting->tokenMs, $Setting->authtoken, $request->profile_id, $Setting->cashbox_id, $Setting->sale_point_id);
+            DataBaseService::updateMainSetting($accountId,$Setting->tokenMs, $Setting->authtoken, $request->profile_id, $request->cashbox_id, $request->sale_point_id);
         } catch (\Throwable $e){
             $message["getCode"] = "Ошибка " . $e->getCode();
             $message["message"] = "Ошибка " . $e->getMessage();

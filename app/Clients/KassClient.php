@@ -58,4 +58,54 @@ class KassClient
     {
         return $res = $this->client->get($this->URL['kassa'].'api/v1/profile/'.$profile_id.'/common/cashbox');
     }
+
+    public function moneyMovement($cashbox_id, $body): \Psr\Http\Message\ResponseInterface
+    {
+        $profile_id = $this->Setting->profile_id;
+
+        return $res = $this->client->post($this->URL['kassa'].'api/v1/profile/'.$profile_id.'/cashbox/'.$cashbox_id.'/money-movement',[
+            'body' => json_encode($body),
+        ]);
+    }
+
+    public function XReport($cashbox_id){
+        $profile_id = $this->Setting->profile_id;
+
+        try {
+            $shift = json_decode($this->ShiftId()->getBody()->getContents())->data;
+            foreach ($shift as $item) {
+                if ($item->cashbox_id == $cashbox_id) {
+                    $shift =  $item->id;
+                    break;
+                } else continue;
+            }
+
+        } catch (BadResponseException $e){
+            $body = json_decode(($e->getResponse()->getBody()->getContents()));
+            if (property_exists($body, 'message')){
+                return response()->json([
+                    'statusCode' => 500,
+                    'message' => $body->message,
+                ], 500);
+            } else return response()->json([
+                'statusCode' => 500,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+        return $res = $this->client->get($this->URL['kassa'].'api/v1/profile/'.$profile_id.'/programming-mode/shift/'.$shift.'/z-report');
+
+    }
+
+    public function ShiftId(): \Psr\Http\Message\ResponseInterface
+    {
+        $profile_id = $this->Setting->profile_id;
+        return $res = $this->client->get($this->URL['kassa'].'api/v1/profile/'.$profile_id.'/programming-mode/shift');
+    }
+
+    public function ZReport($cashbox_id): \Psr\Http\Message\ResponseInterface
+    {
+        $profile_id = $this->Setting->profile_id;
+        return $res = $this->client->patch($this->URL['kassa'].'api/v1/profile/'.$profile_id.'/cashbox/'.$cashbox_id.'/shift/close');
+    }
+
 }

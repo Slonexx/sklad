@@ -1,5 +1,5 @@
 @extends('layout')
-@section('item', 'link_6')
+@section('item', 'link_7')
 @section('content')
 
     <script> function ajax_settings(url, method, data){
@@ -30,9 +30,9 @@
             <div class="row">
                 <label for="idKassa" class="col-3 col-form-label"> Выберите кассу </label>
                 <div class="col-9">
-                    <select id="idKassa" name="idKassa" class="form-select text-black">
+                    <select id="idKassa" name="idKassa" class="form-select text-black" onchange="CashOnHand()">
                         @foreach( $ArrayKassa as $item)
-                            <option value="{{ $item->UniqueNumber }}"> {{ $item->Name }} </option>
+                            <option value="{{ $item->id }}"> {{ $item->name }} </option>
                         @endforeach
                     </select>
                 </div>
@@ -65,11 +65,13 @@
         NAME_HEADER_TOP_SERVICE("Смена")
 
         function Report(Params){
+            window.document.getElementById('Print').innerText = ''
             window.document.getElementById('message').style.display = 'none'
 
             let url = "{{ Config::get("Global")['url'] }}" + "kassa/"+Params+"/" +accountId
+
             let data = {
-                CashboxUniqueNumber: window.document.getElementById('idKassa').value,
+                cashbox_id: window.document.getElementById('idKassa').value,
             };
 
             let settings = ajax_settings(url, "GET", data);
@@ -80,50 +82,7 @@
                 console.log(json)
 
                 if (json.statusCode == 200){
-                    window.document.getElementById('ReportRow').style.display = "Block"
-
-                    if (Params == "XReport") window.document.getElementById("ReportName").innerText = 'СМЕННЫЙ Х-ОТЧЕТ'
-                    if (Params == "ZReport") window.document.getElementById("ReportName").innerText = 'СМЕННЫЙ Z-ОТЧЕТ'
-
-                    window.document.getElementById('TaxPayerName').innerText = json.Data.TaxPayerName
-                    window.document.getElementById('TaxPayerIN').innerText = json.Data.TaxPayerIN
-                    if (json.Data.TaxPayerVAT == true) {
-                        window.document.getElementById('TaxPayerVAT').style.display = "Block"
-                        window.document.getElementById('TaxPayerVATSeria').innerText = json.Data.TaxPayerVATSeria
-                        window.document.getElementById('TaxPayerVATNumber').innerText = json.Data.TaxPayerVATNumber
-                    }
-                    window.document.getElementById('ReportNumber').innerText = json.Data.ReportNumber
-                    window.document.getElementById('ShiftNumber').innerText = json.Data.ShiftNumber
-                    window.document.getElementById('StartOn').innerText = json.Data.StartOn
-                    window.document.getElementById('ReportOn').innerText = json.Data.ReportOn
-
-                    window.document.getElementById('StartNonNullableSell').innerText = new Intl.NumberFormat().format(json.Data.StartNonNullable.Sell)
-                    window.document.getElementById('StartNonNullableBuy').innerText = new Intl.NumberFormat().format(json.Data.StartNonNullable.Buy)
-                    window.document.getElementById('StartNonNullableReturnSell').innerText = new Intl.NumberFormat().format(json.Data.StartNonNullable.ReturnSell)
-                    window.document.getElementById('StartNonNullableReturnBuy').innerText = new Intl.NumberFormat().format(json.Data.StartNonNullable.ReturnBuy)
-
-                    SellOrBuyOrReturn(json.Data.Sell, "Sell")
-                    SellOrBuyOrReturn(json.Data.Buy, "Buy")
-                    SellOrBuyOrReturn(json.Data.ReturnSell, "ReturnSell")
-                    SellOrBuyOrReturn(json.Data.ReturnBuy, "ReturnBuy")
-
-                    window.document.getElementById('PutMoneySum').innerText = new Intl.NumberFormat().format(json.Data.PutMoneySum)
-                    window.document.getElementById('TakeMoneySum').innerText = new Intl.NumberFormat().format(json.Data.TakeMoneySum)
-                    window.document.getElementById('CashEndNonNullableSell').innerText =  new Intl.NumberFormat().format(json.Data.EndNonNullable.Sell)
-
-                    window.document.getElementById('EndNonNullableSell').innerText = new Intl.NumberFormat().format(json.Data.EndNonNullable.Sell)
-                    window.document.getElementById('EndNonNullableBuy').innerText = new Intl.NumberFormat().format(json.Data.EndNonNullable.Buy)
-                    window.document.getElementById('EndNonNullableReturnSell').innerText = new Intl.NumberFormat().format(json.Data.EndNonNullable.ReturnSell)
-                    window.document.getElementById('EndNonNullableReturnBuy').innerText = new Intl.NumberFormat().format(json.Data.EndNonNullable.ReturnBuy)
-
-                    window.document.getElementById('ControlSum').innerText = json.Data.ControlSum
-                    window.document.getElementById('EndDocumentCount').innerText = json.Data.DocumentCount
-                    window.document.getElementById('OfdName').innerText = json.Data.Ofd.Name
-
-                    window.document.getElementById('CashboxIN').innerText = json.Data.CashboxIN
-                    window.document.getElementById('CashboxRN').innerText = json.Data.CashboxRN
-                    window.document.getElementById('CashboxSN').innerText = json.Data.CashboxSN
-
+                    $('#Print').append(json.Data.check)
                 } else {
                     window.document.getElementById('message').style.display = 'block'
                     window.document.getElementById('message').innerText = json.message
@@ -137,9 +96,7 @@
 
             let url = "{{ Config::get("Global")['url'] }}" + "kassa/MoneyOperation/viewCash/" +accountId
             let data = {
-                CashboxUniqueNumber: window.document.getElementById('idKassa').value,
-                OperationType: 1,
-                Sum: 0,
+                cashbox_id: window.document.getElementById('idKassa').value,
             };
 
             let settings = ajax_settings(url, "GET", data);
@@ -162,7 +119,7 @@
         function saveValCash(){
             let url = "{{ Config::get("Global")['url'] }}" + "kassa/MoneyOperation/" +accountId
             let data = {
-                CashboxUniqueNumber: window.document.getElementById('idKassa').value,
+                cashbox_id: window.document.getElementById('idKassa').value,
                 OperationType: window.document.getElementById('operations').value,
                 Sum: window.document.getElementById('inputSum').value,
             };
@@ -179,6 +136,7 @@
                     let message_good = window.document.getElementById('message_good');
                     message_good.style.display = 'block'
                     message_good.innerText = json.message
+                    CashOnHand()
                     closeModal('cash')
                 } else {
                     console.log('false')
@@ -272,14 +230,14 @@
         </div>
     </div>
     <div class="modal fade" id="Report" tabindex="-1"  role="dialog" aria-labelledby="cashTitle" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"> Отчёт </h5>
                     <div class="close" data-dismiss="modal" aria-label="Close" style="cursor: pointer;"><i onclick="closeModal('Report')" class="fa-regular fa-circle-xmark"></i></div>
                 </div>
                 <div id="Print" class="modal-body divPrint" style="font-size: 14px">
-                    <div id="ReportRow" class="row" style="display: none">
+                    {{--<div id="ReportRow" class="row" style="display: none">
                         <div id="TaxPayerName" style="text-align: center"> </div>
                         <div style="text-align: center">БИН &nbsp; <span id="TaxPayerIN"></span> </div>
                         <div id="TaxPayerVAT" style="text-align: center; display: none"> НДС Серия &nbsp;
@@ -441,12 +399,12 @@
                         <div style="text-align: center">ЗНМ: &nbsp; <span id="CashboxSN"></span> </div>
                         <hr style="border:1px dashed black; margin-top: 0.5rem !important; margin-bottom: 0.5rem;">
                         <div style="text-align: center">  *** Конец отчета *** </div>
-                    </div>
+                    </div>--}}
                 </div>
                 <div class="modal-footer">
                     <button onclick="closeModal('XReport')" type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
                     <button onclick="PrintDiv('Print');" type="button" class="btn btn-success" data-dismiss="modal">Распечатать</button>
-                    <a target="_blank" href="{{ Config::get("Global")['webkassa'] }}" class="btn btn-primary">Открыть в WebKassa</a>
+                    <a target="_blank" href="{{ Config::get("Global")['kassa'] }}" class="btn btn-primary">Открыть в Wipon</a>
                 </div>
             </div>
         </div>
@@ -455,7 +413,7 @@
     <script>
         function PrintDiv(divName) {
             var printContents = document.getElementById(divName).innerHTML;
-            var printContentsBODY = "<style> body { font-family: 'Helvetica', 'Arial', sans-serif !important; } </style>"
+            var printContentsBODY = "<style> body { font-family: 'Calibri', 'Arial', sans-serif !important; } </style>"
             var printContentsCSS = " <style> div{ font-size: 12px !important; } table tr td{ font-size: 12px !important; padding: 0 !important; margin: 0 !important; } html, body { margin: 0px; padding: 0px; border: 0px; width: 100%; height: 100%; font-size: 13px !important; } iframe { width: 200px; height: 200px; margin: 0px; padding: 0px; border: 0px; display: block; } </style>";
             w = window.open();
 
