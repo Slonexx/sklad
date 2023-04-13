@@ -42,7 +42,7 @@
         let cashbox = "{{$cashbox_id}}"
 
 
-        function getSearchToTIS(){ window.open('{{Config::get("Global")['webkassa']}}'+"spa-ui/reports/tickets-history") }
+        function getSearchToTIS(){ window.open('{{Config::get("Global")['kassa']}}'+"history/receipts") }
 
         function CloseChangeWebKassa(){
             window.document.getElementById('CloseChangeWebKassa').style.display = 'none'
