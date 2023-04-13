@@ -8,7 +8,7 @@
     <div class="main-container">
         <div class="row gradient rounded p-2">
             <div class="col-2">
-                <div class="mx-2"> <img src="https://smartwebkassa.kz/webkassa_png.png" width="90%"  alt=""></div>
+                <div class="mx-2"> <img src="{{ asset('integration.svg') }}" width="90%"  alt=""></div>
             </div>
             <div class="col-6 text-black " style="font-size: 22px; margin-top: 1.2rem !important;">
                 <span id="nameObjectHeader"> Заказ покупателя № </span>

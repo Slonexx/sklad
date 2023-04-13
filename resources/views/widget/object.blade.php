@@ -4,7 +4,7 @@
 
         <div class="row gradient rounded p-2">
             <div class="col-6">
-                <div class="mx-2 text-center"> <img src="https://smartwebkassa.kz/webkassa_png.png" width="50%"   alt=""> </div>
+                <div class="mx-2 text-center"> <img src="{{ asset('integration.svg') }}" width="50%"   alt=""> </div>
             </div>
             <div class="col-2 ">
 
