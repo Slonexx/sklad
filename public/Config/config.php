@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'appId' => '672c9f92-0f5c-4eef-8ec1-1ea737be7515',
-    'appUid' => 'webkassa.smartinnovations',
-    'secretKey' => '0rhC5i8gdbSqJ3KnoBjZfci3hnJseq0mGb0QdqEu3PiIM4wp5loQCRMIfIMK5AR5yPJ2OvApvzCzQ9Z81pbYJpYWkp9LlsvvUW8c47q1wJocUZW7GeNxGAqE6AR98RX5',
-    'appBaseUrl' => 'https://smartwebkassa.kz/',
+    'appId' => '6921af1e-4a3d-4449-bd1c-eb04d8afdd30',
+    'appUid' => 'prosklad.smartinnovations',
+    'secretKey' => '94t405PWPJDQdwwPXIyg5DQomiReULzdQFcsqxOwJO1hSOKlG8f8joVBoHMXSXfb39xSUkMdY1yMVSfKHNnL6i7CKDJ7HvANRGdYjlqZKi7T5AN6uKOV3jV2EHi7GwPs',
+    'appBaseUrl' => 'https://smartwiponkassa.kz/',
 ];
