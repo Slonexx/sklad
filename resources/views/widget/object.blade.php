@@ -39,13 +39,18 @@
         let accountId = "{{$accountId}}"
         let Global_object_Id
         let entity_type = "{{$entity}}"
+        let cashbox = "{{$cashbox_id}}"
 
 
         function getSearchToTIS(){ window.open('{{Config::get("Global")['webkassa']}}'+"spa-ui/reports/tickets-history") }
 
         function CloseChangeWebKassa(){
             window.document.getElementById('CloseChangeWebKassa').style.display = 'none'
-            let settings = ajax_settings("{{Config::get("Global")['url']}}"+'kassa/ZReport/'+accountId, 'GET', null)
+            let data = {
+                cashbox_id: cashbox,
+            };
+
+            let settings = ajax_settings("{{Config::get("Global")['url']}}"+'kassa/ZReport/'+accountId, 'GET', data)
             console.log('Widget setting attributes: ↓')
             console.log(settings)
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Entity;
 
 use App\Clients\MsClient;
+use App\Http\Controllers\BD\getMainSettingBD;
 use App\Http\Controllers\BD\getWorkerID;
 use App\Http\Controllers\Config\getSettingVendorController;
 use App\Http\Controllers\Config\Lib\VendorApiController;
@@ -23,8 +24,8 @@ class widgetController extends Controller
             //$Workers = new getWorkerID("e793faeb-e63a-11ec-0a80-0b4800079eb3");
 
             $Workers = new getWorkerID($employee->id);
-            $Setting = new getSettingVendorController($accountId);
-            $Client = new MsClient($Setting->TokenMoySklad);
+            $Setting = new getMainSettingBD($accountId);
+            $Client = new MsClient($Setting->tokenMs);
 
             $body = $Client->get("https://online.moysklad.ru/api/remap/1.2/entity/employee");
 
@@ -33,6 +34,8 @@ class widgetController extends Controller
             return view( 'widget.object', [
                 'accountId' => $accountId,
                 'entity' => $object,
+
+                'cashbox_id' => $Setting->cashbox_id,
             ] );
 
         } catch (BadResponseException $e){

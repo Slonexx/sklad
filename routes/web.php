@@ -3,6 +3,9 @@
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\Config\collectionOfPersonalController;
 use App\Http\Controllers\Config\DeleteVendorApiController;
+use App\Http\Controllers\Entity\PopapController;
+use App\Http\Controllers\Entity\PrintController;
+use App\Http\Controllers\Entity\widgetController;
 use App\Http\Controllers\initialization\indexController;
 use App\Http\Controllers\Setting\AccessController;
 use App\Http\Controllers\Setting\ChangeController;
@@ -45,6 +48,14 @@ Route::get('/kassa/ZReport/{accountId}', [ReportController::class, 'ZReport']);
 
 
 
+
+Route::get('/widget/{object}', [widgetController::class, 'widgetObject']);
+Route::get('/widget/Info/Attributes', [widgetController::class, 'widgetInfoAttributes']);
+
+Route::get('/Popup/{object}', [PopapController::class, 'Popup']);
+Route::get('/Popup/{object}/show', [PopapController::class, 'showPopup']);
+Route::post('/Popup/{object}/send', [PopapController::class, 'sendPopup']);
+Route::get('/Popup/print/{accountId}/{entity_type}/{object}', [PrintController::class, 'PopupPrint']);
 
 
 
