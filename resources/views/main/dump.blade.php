@@ -15,7 +15,7 @@
 <div class="gradient rounded p-2">
         <div class="row">
             <div class="col-3"></div>
-            <div class="col-2"> <img src="{{ asset('integration.svg') }}" width="100%" height="100%"  alt=""></div>
+            <div class="col-2"> <img src="{{ asset('integration.svg') }}" width="80%" height="80%"  alt=""></div>
             <span class="col-6 mt-2"> Данная интеграция находиться в МоемСкладе </span>
         </div>
 </div>
