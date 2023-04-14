@@ -42,7 +42,6 @@ class TicketService
 
 
         $this->Setting = new getMainSettingBD($accountId);
-
         $this->kassClient = new KassClient($this->Setting->accountId);
         $this->msClient = new MsClient($this->Setting->tokenMs);
 
@@ -62,7 +61,17 @@ class TicketService
         if (isset($Body['Status'])) { return response()->json($Body['Message']); }
 
         try {
-            $postTicket = $this->kassClient->postCheck($Body);
+            $postTicket = $this->kassClient->ticket($Body);
+            //dd($Body, $postTicket);
+
+            $result = json_decode(json_encode([
+                'data' => [
+                    'id' => $postTicket->data->ticket->id,
+                    'receipt_number' => $postTicket->data->ticket->receipt_number,
+                    'link' => $postTicket->data->ticket->link,
+                ],
+                'check' => $postTicket->data->ticket->check
+            ]));
 
             $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
             $put =  $this->msClient->put('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, $putBody);
@@ -80,14 +89,14 @@ class TicketService
             return response()->json([
                 'status'    => 'Ticket created',
                 'code'      => 200,
-                'postTicket' => $postTicket,
-                'ExternalCheckNumber' => $Body['ExternalCheckNumber'],
+                'postTicket' => $result,
             ]);
         } catch (BadResponseException  $e){
             return response()->json([
                 'status'    => 'error',
                 'code'      => $e->getCode(),
-                'errors'    => json_decode($e->getResponse()->getBody()->getContents(), true)
+                'errors'    => json_decode($e->getResponse()->getBody()->getContents(), true),
+                'Body'      => $Body,
             ]);
         }
 
@@ -99,43 +108,30 @@ class TicketService
 
         //dd($this->Setting, $id_entity, $entity_type, $money_card, $money_cash, $payType, $total, $positions);
 
-        $operation = $this->getOperation($payType);
-        $Change = ($money_card + $money_cash + $money_mobile) - $total;
+        $type = $this->getOperation($payType);
 
         $payments = $this->getPayments($money_card, $money_cash, $money_mobile, $total);
         $items = $this->getItems($positions, $id_entity, $entity_type);
-        $customer = $this->getCustomer($id_entity, $entity_type);
+        $iin = $this->getCustomer($id_entity, $entity_type);
 
-        if ($operation == '') return ['Status' => false, 'Message' => 'не выбран тип продажи'];
-        if ($Change < 0) return ['Status' => false, 'Message' => 'Сдача не может быть отрицательной, проверьте сумму'];
+        if ($type == '') return ['Status' => false, 'Message' => 'Не выбран тип продажи'];
         if ($payments == null) return ['Status' => false, 'Message' => 'Не были введены суммы !'];
+        if ($items == null) return ['Status' => false, 'Message' => 'Отсутствуют позиции товара!'];
+
+        if ($this->Setting->sale_point_id == null) return ['Status' => false, 'Message' => 'Отсутствуют настройки точки продаж в настройках приложение  !'];
+
 
 
         $result = [
-            'OperationType' => (int) $operation,
-            'Positions' => $items['Items'],
-            'TicketModifiers' => $items['TicketModifiers'],
-            'Payments' => $payments,
-            'Change' => $Change,
-            'RoundType' => 2,
-            'ExternalCheckNumber' => Str::uuid()->toString(),
-            'CustomerEmail' => $customer['email'],
-            'CustomerPhone' => $customer['phone'],
-            'CustomerXin' => $customer['inn'],
+           "type" => $type,
+           "sale_section_id" => (int) $this->Setting->sale_point_id,
+           "items" => $items,
+           "payments" => $payments,
+           "iin" => $iin,
         ];
 
-        if ($result['CustomerEmail'] == null){
-            unset($result['CustomerEmail']);
-        }
-        if ($result['CustomerPhone'] == null){
-            unset($result['CustomerPhone']);
-        }
-        if ($result['CustomerXin'] == null){
-            unset($result['CustomerXin']);
-        }
-
-        if ($result['TicketModifiers'] == null){
-            unset($result['TicketModifiers']);
+        if ($result['iin'] == null){
+            unset($result['iin']);
         }
 
         return $result;
@@ -154,23 +150,24 @@ class TicketService
     private function getPayments($card, $cash, $mobile, $total): array
     {
         $result = null;
+        $tmp= null;
         if ( $cash >= 0 ) {
-            $result[] = [
-                'PaymentType' => 0,
-                'Sum' => (float) $cash,
+            $tmp[] = [
+                'payment_method' => 0,
+                'sum' => (float) $cash,
             ];
         }
         if ( $card >= 0 ) {
-            $result[] = [
-                'PaymentType' => 1,
-                'Sum' => (float) $card,
+            $tmp[] = [
+                'payment_method' => 1,
+                'sum' => (float) $card,
             ];
         }
-        if ( $mobile >= 0 ) {
-            $result[] = [
-                'PaymentType' => 4,
-                'Sum' => (float) $mobile,
-            ];
+
+        foreach ($tmp as $item){
+            if ($item['sum'] > 0){
+                $result[] = $item;
+            }
         }
 
         return $result;
@@ -178,12 +175,12 @@ class TicketService
 
     private function getItems($positions, $idObject, $typeObject): array
     {
-        $result = ['Items' => null, "TicketModifiers" => null];
+        $result = null;
 
         foreach ($positions as $id => $item){
             $TaxPercent = (float) trim($item->is_nds, '%');
             $discount = trim($item->discount, '%');
-            if ($TaxPercent == 'без НДС' or $TaxPercent == "0%" or $TaxPercent == 0 or $TaxPercent == "0"){ $TaxPercent = 0; $TaxType = 0; } else $TaxType = 100;
+            if ($TaxPercent == 'без НДС' or $TaxPercent == "0%" or $TaxPercent == 0 or $TaxPercent == "0"){ $TaxPercent = 0; $TaxType = 0; } else $TaxType = 1;
             if ($discount > 0){ $discount = round(($item->price * $item->quantity * ($discount/100)), 2); }
             if ($typeObject == 'demand'){
                 $demand =  $this->msClient->get('https://online.moysklad.ru/api/remap/1.2/entity/' . $typeObject . '/' . $idObject);
@@ -192,20 +189,18 @@ class TicketService
                 foreach ($demandPos as $item_2){
                     if ( $item->id == $item_2->id and isset($item_2->trackingCodes) ){
                         foreach ($item_2->trackingCodes as $code){
-                            $result['Items'][] = [
-                                'Count' => 1,
-                                'Price' => (float) $item->price,
+                            $result[] = [
+                                'name' => (string) str_replace('+', ' ', $item->name),
+                                'quantity' => (float) round($item->quantity, 3),
+                                'price' => (float) round($item->price, 2),
 
-                                'TaxType' => $TaxType,//Налог в тенге РАССЧИТАТЬ!
-                                'TaxPercent' => (int) $TaxPercent,
-                                'Tax' => round(($item->price * 1 - $discount) / (($TaxPercent + 100) / 100) * ($TaxPercent / 100),2),
+                                'discount' =>(float) round($discount, 2),
+                                'excise_stamp' =>(string) $code->cis,
+                                'vat_type' => (int) $TaxPercent,
 
+                                'unit_id' => (int) $this->codeUOM($item->UOM),
+                                'sale_section_id' => (int) $this->Setting->sale_point_id,
 
-                                'PositionName' => (string) $item->name,
-                                'PositionCode' => $id,
-                                'Discount' =>(float) $discount,
-                                'UniCode' => (int) $item->UOM,
-                                'Mark' =>(string) $code->cis,
                             ];
                         }
 
@@ -213,55 +208,32 @@ class TicketService
                 }
             }
             else {
-                $result['Items'][$id] = [
-                    'Count' => (float) $item->quantity,
-                    'Price' => (float) $item->price,
+                $result[$id] = [
+                    'name' => (string) str_replace('+', ' ', $item->name),
+                    'quantity' => (float) round($item->quantity, 3),
+                    'price' => (float) round($item->price, 2),
 
-                    'TaxType' => $TaxType,
-                    'TaxPercent' => (int) $TaxPercent,
-                    'Tax' =>  round(($item->price * $item->quantity - $discount) / (($TaxPercent + 100) / 100) * ($TaxPercent / 100),2),
+                    'discount' =>(float) round($discount, 2),
 
+                    'vat_type' => (int) $TaxPercent,
 
-                    'PositionName' => (string) str_replace('+', ' ', $item->name),
-                    'PositionCode' => $id,
-                    'Discount' =>(float) $discount,
-                    'UniCode' => (int) $item->UOM,
+                    'unit_id' => (int) $this->codeUOM($item->UOM),
+                    'sale_section_id' => (int) $this->Setting->sale_point_id,
                 ];
-            }
-
-
-
-            if (!isset($result['TicketModifiers'])) {
-                $result['TicketModifiers'] = null;
             }
         }
 
         return $result;
     }
 
-    private function getCustomer($id_entity, $entity_type): array
+    private function getCustomer($id_entity, $entity_type)
     {
         $body =  $this->msClient->get('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity);
         $agent =  $this->msClient->get($body->agent->meta->href);
-        $result = [
-            'email' => null,
-            'phone' => null,
-            'inn' => null,
-        ];
-
-        if (property_exists($agent, 'email')) { $result['email'] = $agent->email; }
-        if (property_exists($agent, 'phone')) {
-            $phone = "7".mb_substr(str_replace('+7', '',
-                    str_replace(" ", '',
-                        str_replace('(', '',
-                            str_replace(')', '',
-                                str_replace('-', '', $agent->phone))))), -10);
-            $result['phone'] = $phone;
-        }
-        if (property_exists($agent, 'inn')) { $result['iin'] = $agent->inn; }
+        $result = null;
+        if (property_exists($agent, 'inn')) { $result = $agent->inn; }
 
         return $result;
-
     }
 
     private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody, mixed $positionsBody): array
@@ -300,7 +272,7 @@ class TicketService
                         "type"=> $item->meta->type,
                         "mediaType"=> $item->meta->mediaType,
                     ],
-                    "value" => $postTicket->Data->CheckNumber,
+                    "value" => $postTicket->data->ticket->receipt_number,
                 ];
             }
             if ($item->name == "Ссылка для QR-кода (ТИС Prosklad)" ) {
@@ -310,7 +282,7 @@ class TicketService
                         "type"=> $item->meta->type,
                         "mediaType"=> $item->meta->mediaType,
                     ],
-                    "value" => $postTicket->Data->TicketUrl,
+                    "value" => $postTicket->data->ticket->link,
                 ];
             }
             if ($item->name == "Фискализация (ТИС Prosklad)" ) {
@@ -330,7 +302,7 @@ class TicketService
                         "type"=> $item->meta->type,
                         "mediaType"=> $item->meta->mediaType,
                     ],
-                    "value" => (string) $Body['ExternalCheckNumber'],
+                    "value" => (string) $postTicket->data->ticket->id,
                 ];
             }
         }
@@ -544,7 +516,7 @@ class TicketService
                             'type' => $item->meta->type,
                             'mediaType' => $item->meta->mediaType,
                         ],
-                        'value' => $putBody->Data->CheckNumber,
+                        'value' => $putBody->data->ticket->receipt_number,
                     ];
                 }
                 if ($item->name == 'Ссылка для QR-кода (ТИС Prosklad)'){
@@ -554,7 +526,7 @@ class TicketService
                             'type' => $item->meta->type,
                             'mediaType' => $item->meta->mediaType,
                         ],
-                        'value' => $putBody->Data->TicketUrl,
+                        'value' => $putBody->data->ticket->link,
                     ];
                 }
                 if ($item->name == 'Фискализация (ТИС Prosklad)'){
@@ -634,7 +606,6 @@ class TicketService
 
 
 
-
             if ($entity_type == 'customerorder'){
                 $body['description'] = $body['description'].'заказа покупателя, его номер:'. $newBody->name;
                 unset($body['demand']);
@@ -666,7 +637,16 @@ class TicketService
             $OldMessage = $oldBody->description.PHP_EOL;
         }
 
-        return (string) $OldMessage.'['.( (int) date('H') + 6 ).date(':i:s').' '. date('Y-m-d') .'] '. $message.$postTicket->Data->CheckNumber ;
+        return (string) $OldMessage.'['.( (int) date('H') + 6 ).date(':i:s').' '. date('Y-m-d') .'] '. $message.$postTicket->data->ticket->receipt_number ;
+    }
+
+    private function codeUOM($UOM): \Illuminate\Http\JsonResponse|int|null
+    {
+        try {
+           return $this->kassClient->unit($UOM);
+        } catch (BadResponseException $e){
+            return null;
+        }
     }
 
 
