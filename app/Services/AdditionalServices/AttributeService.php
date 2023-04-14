@@ -85,31 +85,31 @@ class AttributeService
     {
         return [
             0 => [
-                "name" => "фискальный номер (WebKassa)",
+                "name" => "фискальный номер (ТИС Prosklad)",
                 "type" => "string",
                 "required" => false,
                 "show" => false,
-                "description" => "данное дополнительнее поле отвечает за фискальный номер чека (WebKassa)",
+                "description" => "данное дополнительнее поле отвечает за фискальный номер чека (ТИС Prosklad)",
             ],
             1 => [
-                "name" => "Ссылка для QR-кода (WebKassa)",
+                "name" => "Ссылка для QR-кода (ТИС Prosklad)",
                 "type" => "link",
                 "required" => false,
-                "description" => "данное дополнительнее поле отвечает за ссылку на QR-код чека (WebKassa)",
+                "description" => "данное дополнительнее поле отвечает за ссылку на QR-код чека (ТИС Prosklad)",
             ],
             2 => [
-                "name" => "Фискализация (WebKassa)",
+                "name" => "Фискализация (ТИС Prosklad)",
                 "type" => "boolean",
                 "required" => false,
                 "show" => false,
-                "description" => "данное дополнительное поле отвечает за проведения фискализации, если стоит галочка то фискализация была (WebKassa)",
+                "description" => "данное дополнительное поле отвечает за проведения фискализации, если стоит галочка то фискализация была (ТИС Prosklad)",
             ],
             3 => [
-                "name" => "ID (WebKassa)",
+                "name" => "ID (ТИС Prosklad)",
                 "type" => "string",
                 "required" => false,
                 "show" => false,
-                "description" => "уникальный идентификатор по данному дополнительному полю идёт синхронизация с WebKassa (WebKassa)",
+                "description" => "уникальный идентификатор по данному дополнительному полю идёт синхронизация с Wipon (ТИС Prosklad)",
             ],
         ];
     }
@@ -117,11 +117,11 @@ class AttributeService
     public function getPayDocAttributes(){
         return [
             0 => [
-                "name" => "Фискализация (WebKassa)",
+                "name" => "Фискализация (ТИС Prosklad)",
                 "type" => "boolean",
                 "required" => false,
                 "show" => false,
-                "description" => "данное дополнительное поле отвечает за проведения фискализации, если стоит галочка то фискализация была (WebKassa)",
+                "description" => "данное дополнительное поле отвечает за проведения фискализации, если стоит галочка то фискализация была (ТИС Prosklad)",
             ],
         ];
     }

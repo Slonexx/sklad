@@ -24,14 +24,14 @@ class PrintController extends Controller
 
             $MS = $ClientMS->get(Config::get("Global")['ms'].$entity_type.'/'.$object);
             foreach ($MS->attributes as $item){
-                if ($item->name == "ID (WebKassa)"){
+                if ($item->name == "ID (ТИС Prosklad)"){
                     $ExternalCheckNumber = $item->value;
                 } else continue;
             }
             if ($ExternalCheckNumber != null) $Body = $ClientKassa->TicketPrint($ExternalCheckNumber);
             else  return view('popup.Print', [
                 'StatusCode' => 500,
-                'Message' => "Отсутствует ID (WebKassa)",
+                'Message' => "Отсутствует ID (ТИС Prosklad)",
                 'PrintFormat' => [],
             ]);
 

@@ -272,7 +272,7 @@ class TicketService
         $positions =  $this->msClient->get($oldBody->positions->meta->href)->rows;
 
         foreach ($oldBody->attributes as $item){
-            if ($item->name == 'Фискальный номер (WebKassa)' and $item->name != ''){
+            if ($item->name == 'Фискальный номер (ТИС Prosklad)' and $item->name != ''){
                 $check_attributes_in_value_name = false;
                 break;
             } else $check_attributes_in_value_name = true;
@@ -293,7 +293,7 @@ class TicketService
     {
         $Result_attributes = null;
         foreach ($attributes as $item) {
-            if ($item->name == "фискальный номер (WebKassa)" and $check_attributes == true) {
+            if ($item->name == "фискальный номер (ТИС Prosklad)" and $check_attributes == true) {
                 $Result_attributes[] = [
                     "meta"=> [
                         "href"=> $item->meta->href,
@@ -303,7 +303,7 @@ class TicketService
                     "value" => $postTicket->Data->CheckNumber,
                 ];
             }
-            if ($item->name == "Ссылка для QR-кода (WebKassa)" ) {
+            if ($item->name == "Ссылка для QR-кода (ТИС Prosklad)" ) {
                 $Result_attributes[] = [
                     "meta"=> [
                         "href"=> $item->meta->href,
@@ -313,7 +313,7 @@ class TicketService
                     "value" => $postTicket->Data->TicketUrl,
                 ];
             }
-            if ($item->name == "Фискализация (WebKassa)" ) {
+            if ($item->name == "Фискализация (ТИС Prosklad)" ) {
                 $Result_attributes[] = [
                     "meta"=> [
                         "href"=> $item->meta->href,
@@ -323,7 +323,7 @@ class TicketService
                     "value" => true,
                 ];
             }
-            if ($item->name == "ID (WebKassa)" ) {
+            if ($item->name == "ID (ТИС Prosklad)" ) {
                 $Result_attributes[] = [
                     "meta"=> [
                         "href"=> $item->meta->href,
@@ -537,7 +537,7 @@ class TicketService
             $attributes = null;
             $positions = null;
             foreach ($attributes_item as $item){
-                if ($item->name == 'фискальный номер (WebKassa)'){
+                if ($item->name == 'фискальный номер (ТИС Prosklad)'){
                     $attributes[] = [
                         'meta' => [
                             'href' => $item->meta->href,
@@ -547,7 +547,7 @@ class TicketService
                         'value' => $putBody->Data->CheckNumber,
                     ];
                 }
-                if ($item->name == 'Ссылка для QR-кода (WebKassa)'){
+                if ($item->name == 'Ссылка для QR-кода (ТИС Prosklad)'){
                     $attributes[] = [
                         'meta' => [
                             'href' => $item->meta->href,
@@ -557,7 +557,7 @@ class TicketService
                         'value' => $putBody->Data->TicketUrl,
                     ];
                 }
-                if ($item->name == 'Фискализация (WebKassa)'){
+                if ($item->name == 'Фискализация (ТИС Prosklad)'){
                     $attributes[] = [
                         'meta' => [
                             'href' => $item->meta->href,
