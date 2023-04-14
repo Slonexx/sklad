@@ -21,7 +21,7 @@ class AttributeController extends Controller
     {
         $data = ['tokenMs'=> $tokenMs, 'accountId'=>$accountId];
 
-        //$this->attributeService->setAllAttributesMs($data);
+        $this->attributeService->setAllAttributesMs($data);
     }
 
 }
