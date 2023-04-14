@@ -70,7 +70,7 @@ class TicketService
                     'receipt_number' => $postTicket->data->ticket->receipt_number,
                     'link' => $postTicket->data->ticket->link,
                 ],
-                'check' => $postTicket->data->ticket->check
+                'check' => $postTicket->data->check
             ]));
 
             $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
