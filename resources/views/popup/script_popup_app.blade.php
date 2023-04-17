@@ -45,18 +45,24 @@
 
 
     function PrintCheck(){
-        let urlPrint = "{{Config::get("Global")['url']}}" + 'Popup/print/'+ accountId + '/' + entity_type + '/' + object_Id
-        window.open(urlPrint)
-        /*let settings = ajax_settings(urlPrint, "GET", null);
-        console.log(urlPrint + ' settings ↓ ')
-        console.log(settings)
-        $.ajax(settings).done(function (json) {
-            console.log(urlPrint + ' response ↓ ')
-            console.log(json)
+
+        if (html !== ''){
+
+            w = window.open();
+
+            w.document.write(html);
+            w.document.write('<scr' + 'ipt type="text/javascript">' + 'window.onload = function() { window.print(); window.close(); };' + '</sc' + 'ript>');
+
+            w.document.close(); // necessary for IE >= 10
+            w.focus(); // necessary for IE >= 10
+
+            return true;
+        } else {
+            let urlPrint = "{{Config::get("Global")['url']}}" + 'Popup/print/'+ accountId + '/' + entity_type + '/' + object_Id
+            window.open(urlPrint)
+        }
 
 
-
-        })*/
     }
 
     function setProducts(products){

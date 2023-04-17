@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Config;
 
 class PrintController extends Controller
 {
-    public function PopupPrint(Request $request, $accountId, $entity_type, $object): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
+    public function PopupPrint(Request $request, $accountId, $entity_type, $object)
     {
 
         $Setting  = new getMainSettingBD($accountId);
@@ -24,21 +24,15 @@ class PrintController extends Controller
 
             $MS = $ClientMS->get(Config::get("Global")['ms'].$entity_type.'/'.$object);
             foreach ($MS->attributes as $item){
-                if ($item->name == "ID (ТИС Prosklad)"){
-                    $ExternalCheckNumber = $item->value;
+                if ($item->name == "Ссылка для QR-кода (ТИС Prosklad)"){
+                    return redirect($item->value);
                 } else continue;
             }
-            if ($ExternalCheckNumber != null) $Body = $ClientKassa->TicketPrint($ExternalCheckNumber);
-            else  return view('popup.Print', [
-                'StatusCode' => 500,
-                'Message' => "Отсутствует ID (ТИС Prosklad)",
-                'PrintFormat' => [],
-            ]);
 
             return view('popup.Print', [
                 'StatusCode' => 200,
-                'Message' => "",
-                'PrintFormat' => $Body->Data->Lines,
+                'Message' => "Не удалось загрузить чек, пожалуйста повторите позже",
+                'PrintFormat' => "",
             ]);
 
         } catch (BadResponseException $e){

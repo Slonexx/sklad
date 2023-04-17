@@ -83,7 +83,7 @@ class TicketService
                 ]);
             }
             if ($this->Setting->paymentDocument != null ){
-                $this->createPaymentDocument($this->Setting->paymentDocument, $entity_type, $put, $Body['Payments']);
+                $this->createPaymentDocument($this->Setting->paymentDocument, $entity_type, $put, $Body['payments']);
             }
 
             return response()->json([

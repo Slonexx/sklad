@@ -1,4 +1,3 @@
-
 @extends('popup.index')
 @section('content')
 
@@ -166,20 +165,20 @@
         let products_length = ''
 
 
-        /*let receivedMessage = {
+        let receivedMessage = {
             "name":"OpenPopup",
             "messageId":1,
             "popupName":"fiscalizationPopup",
             "popupParameters":
                 {
-                    "object_Id":"ac0c9983-acec-11ed-0a80-06ac001abb0c",
+                    "object_Id":"a82f21d9-d901-11ed-0a80-0068000607bb",
                     "accountId":"1dd5bd55-d141-11ec-0a80-055600047495",
                     "entity_type":"customerorder",
                 }
-        };*/
+        };
 
         window.addEventListener("message", function(event) {
-        let receivedMessage = event.data
+        //let receivedMessage = event.data
 
         newPopup()
 
@@ -187,6 +186,9 @@
             object_Id = receivedMessage.popupParameters.object_Id;
             accountId = receivedMessage.popupParameters.accountId;
             entity_type = receivedMessage.popupParameters.entity_type;
+
+            receivedMessage = 0
+
 
             if (entity_type === 'customerorder'){
                 window.document.getElementById('nameObjectHeader').innerText = "Заказ покупателя "
@@ -320,12 +322,13 @@
                                 window.document.getElementById("messageGoodAlert").innerText = "Чек создан";
                                 window.document.getElementById("messageGood").style.display = "block";
                                 window.document.getElementById("ShowCheck").style.display = "block";
+                                html = json.postTicket.check
                                 modalShowHide = 'hide';
                             } else {
                                 window.document.getElementById('message').style.display = "block";
                                 window.document.getElementById(button_hide).style.display = "block";
                                 if (json.hasOwnProperty('errors'))window.document.getElementById('messageAlert').innerText = json.errors.message
-                                else window.document.getElementById('messageAlert').innerText = "Ошибка: " + json
+                                else window.document.getElementById('messageAlert').innerText = "Ошибка: " + JSON.stringify(json)
 
                                 modalShowHide = 'hide';
                             }
