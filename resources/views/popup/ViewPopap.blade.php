@@ -165,7 +165,7 @@
         let products_length = ''
 
 
-        let receivedMessage = {
+       /* let receivedMessage = {
             "name":"OpenPopup",
             "messageId":1,
             "popupName":"fiscalizationPopup",
@@ -175,10 +175,10 @@
                     "accountId":"1dd5bd55-d141-11ec-0a80-055600047495",
                     "entity_type":"customerorder",
                 }
-        };
+        };*/
 
         window.addEventListener("message", function(event) {
-        //let receivedMessage = event.data
+        let receivedMessage = event.data
 
         newPopup()
 
@@ -186,8 +186,6 @@
             object_Id = receivedMessage.popupParameters.object_Id;
             accountId = receivedMessage.popupParameters.accountId;
             entity_type = receivedMessage.popupParameters.entity_type;
-
-            receivedMessage = 0
 
 
             if (entity_type === 'customerorder'){
