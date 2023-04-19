@@ -317,7 +317,7 @@
                             let json = response
 
                             if (json.status === 'Ticket created'){
-                                window.document.getElementById("messageGoodAlert").innerText = "Чек создан";
+                                window.document.getElementById("messageGoodAlert").innerText = "Чек создан, пожалуйста закройте документ без сохранения!";
                                 window.document.getElementById("messageGood").style.display = "block";
                                 window.document.getElementById("ShowCheck").style.display = "block";
                                 html = json.postTicket.check
