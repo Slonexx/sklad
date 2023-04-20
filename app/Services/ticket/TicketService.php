@@ -370,7 +370,7 @@ class TicketService
                                 'mediaType' => $OldBody->meta->mediaType,
                                 'uuidHref' => $OldBody->meta->uuidHref,
                             ],
-                            'linkedSum' => 0
+                            'linkedSum' => $OldBody->sum
                         ], ]
                 ];
                 $this->msClient->post($url, $body);
@@ -421,7 +421,7 @@ class TicketService
                                 'mediaType' => $OldBody->meta->mediaType,
                                 'uuidHref' => $OldBody->meta->uuidHref,
                             ],
-                            'linkedSum' => 0
+                            'linkedSum' => $OldBody->sum
                         ], ],
                     'rate' => $rate
                 ];
@@ -487,7 +487,7 @@ class TicketService
                                     'mediaType' => $OldBody->meta->mediaType,
                                     'uuidHref' => $OldBody->meta->uuidHref,
                                 ],
-                                'linkedSum' => 0
+                                'linkedSum' => $OldBody->sum
                             ], ],
                         'rate' => $rate
                     ];

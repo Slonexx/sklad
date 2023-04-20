@@ -180,11 +180,11 @@ class PopapController extends Controller
             'positions' => $position,
         ];
 
-        return app(TicketService::class)->createTicket($body);
+
 
         try {
 
-
+            return app(TicketService::class)->createTicket($body);
 
         } catch (\Throwable $e){
             return response()->json($e->getMessage());
