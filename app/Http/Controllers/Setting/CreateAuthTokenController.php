@@ -79,7 +79,8 @@ class CreateAuthTokenController extends Controller
 
     public function createAuthToken(Request $request): \Illuminate\Http\JsonResponse
     {
-        $login = str_replace('+', '', str_replace(" ", '', $request->email)) ;
+        $login = str_replace('+', '', str_replace(" ", '', str_replace('-', '',
+            str_replace('(', '', str_replace(')', '', $request->email))))) ;
         $password = str_replace(" ", '', $request->password) ;
 
         $client = new KassClient("");
