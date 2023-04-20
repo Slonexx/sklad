@@ -88,7 +88,7 @@
 
         window.document.getElementById('messageGoodAlert').style.display = 'none'
         window.document.getElementById('messageErrorAlert').style.display = 'none'
-        window.document.getElementById('CloseChangeWebKassa').style.display = 'none'
+        //window.document.getElementById('CloseChangeWebKassa').style.display = 'none'
 
         const receivedMessage = event.data;
         if (receivedMessage.name === 'Open') {
