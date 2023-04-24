@@ -44,7 +44,7 @@
 
         function getSearchToTIS(){ window.open('{{Config::get("Global")['kassa']}}'+"history/receipts") }
 
-        function CloseChangeWebKassa(){
+     /*   function CloseChangeWebKassa(){
             window.document.getElementById('CloseChangeWebKassa').style.display = 'none'
             let data = {
                 cashbox_id: cashbox,
@@ -65,10 +65,10 @@
                 else {
                     window.document.getElementById('messageErrorAlert').style.display = 'block'
                     window.document.getElementById('messageErrorAlert').innerText = response.message
-                    window.document.getElementById('CloseChangeWebKassa').style.display = 'block'
+                    //window.document.getElementById('CloseChangeWebKassa').style.display = 'block'
                 }
             });
-        }
+        }*/
 
         function ajax_settings(url, method, data){
             return {
@@ -119,7 +119,7 @@
 
                 let btnF = window.document.getElementById('btnF')
                 let TIS_search = window.document.getElementById('TIS_search')
-                window.document.getElementById('CloseChangeWebKassa').style.display = 'block'
+                //window.document.getElementById('CloseChangeWebKassa').style.display = 'block'
 
                 if (response.ticket_id == null){
                     btnF.innerText = 'Фискализация';
