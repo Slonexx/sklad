@@ -47,7 +47,6 @@ class CreateAuthTokenController extends Controller
         try {
             $body = $Client->getCheck();
         } catch (BadResponseException $e){
-            dd($e->getResponse()->getBody()->getContents());
             if ($e->getCode() == 401){
                 return view('setting.authToken', [
                     'accountId' => $accountId,
