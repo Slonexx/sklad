@@ -3,13 +3,10 @@
 namespace App\Services\workWithBD;
 
 
-use App\Models\addSettingModel;
 use App\Models\documentModel;
-use App\Models\mainSetting;
 use App\Models\settingModel;
 use App\Models\userLoadModel;
 use App\Models\wordersModel;
-use App\Models\Worker;
 
 class DataBaseService
 {
@@ -83,7 +80,17 @@ class DataBaseService
         ]);
     }
 
-    public static function createDocumentSetting($accountId, $paymentDocument, $payment_type, $OperationCash, $OperationCard){
+    public static function createDocumentSetting($accountId, $paymentDocument, $payment_type, $OperationCash, $OperationCard): void
+    {
+
+        $existingRecords = documentModel::where('accountId', $accountId)->get();
+
+        if (!$existingRecords->isEmpty()) {
+            foreach ($existingRecords as $record) {
+                $record->delete();
+            }
+        }
+
         documentModel::create([
             'accountId' => $accountId,
             'paymentDocument' => $paymentDocument,
