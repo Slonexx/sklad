@@ -237,24 +237,27 @@ class TicketService
     }
 
     private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody, mixed $positionsBody): array
-    {   $result = null;
+    {
+        $result = null;
         $check_attributes_in_value_name = false;
 
         $attributes =  $this->msClient->get('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/metadata/attributes/')->rows;
+        $positions =  $this->msClient->get($oldBody->positions->meta->href)->rows;
         if (property_exists($oldBody, 'attributes')) {
             foreach ($oldBody->attributes as $item){
-                if ($item->name == 'Фискальный номер (ТИС Prosklad)' and $item->name != ''){
+                if ($item->name == 'Фискальный номер (ТИС Prosklad)'){
                     $check_attributes_in_value_name = false;
                     break;
                 } else $check_attributes_in_value_name = true;
             }
         } else $check_attributes_in_value_name = true;
 
-
         $Result_attributes = $this->setAttributesToPutBody($Body, $postTicket, $check_attributes_in_value_name, $attributes);
         $result['description'] = $this->descriptionToCreate($oldBody, $postTicket, 'Продажа, Фискальный номер: ');
+        $Resul_positions = $this->setPositionsToPutBody($positions, $positionsBody);
 
         if ($Result_attributes != null){ $result['attributes'] = $Result_attributes; }
+        if ($Resul_positions != null){ $result['positions'] = $Resul_positions; }
 
         return $result;
     }
@@ -263,7 +266,7 @@ class TicketService
     {
         $Result_attributes = null;
         foreach ($attributes as $item) {
-            if ($item->name == "фискальный номер (ТИС Prosklad)" and $check_attributes == true) {
+            if ($item->name == "фискальный номер (ТИС Prosklad)" and $check_attributes) {
                 $Result_attributes[] = [
                     "meta"=> [
                         "href"=> $item->meta->href,
