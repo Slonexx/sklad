@@ -73,7 +73,7 @@ class TicketService
             ]));
 
             $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
-            dd($Body, $postTicket, $putBody);
+            dd($Body, $oldBody, $putBody);
             $put =  $this->msClient->put('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, $putBody);
 
             if ($payType == 'return'){
