@@ -8,6 +8,7 @@ use App\Http\Controllers\Entity\PrintController;
 use App\Http\Controllers\Entity\widgetController;
 use App\Http\Controllers\initialization\indexController;
 use App\Http\Controllers\Setting\AccessController;
+use App\Http\Controllers\Setting\AutomationController;
 use App\Http\Controllers\Setting\ChangeController;
 use App\Http\Controllers\Setting\CreateAuthTokenController;
 use App\Http\Controllers\Setting\DocumentController;
@@ -38,6 +39,10 @@ Route::post('/Setting/Document/{accountId}', [documentController::class, 'postDo
 
 Route::get('/Setting/Worker/{accountId}', [AccessController::class, 'getWorker'])->name('getWorker');
 Route::post('/Setting/Worker/{accountId}', [AccessController::class, 'postWorker']);
+
+
+Route::get('/Setting/Automation/{accountId}', [AutomationController::class, 'getAutomation'])->name('getAutomation');
+Route::post('/Setting/Automation/{accountId}', [AutomationController::class, 'postAutomation']);
 
 
 Route::get('/kassa/change/{accountId}', [ChangeController::class, 'getChange']);

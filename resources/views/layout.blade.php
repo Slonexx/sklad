@@ -20,8 +20,9 @@
                                 <a id="link_4" class="mt-1" href="/Setting/Kassa/{{$accountId}}?isAdmin={{ request()->isAdmin }}"> Касса  </a>
                                 <a id="link_5" class="mt-1" href="/Setting/Document/{{$accountId}}?isAdmin={{ request()->isAdmin }}"> Документ </a>
                                 <a id="link_6" class="mt-1" href="/Setting/Worker/{{$accountId}}?isAdmin={{ request()->isAdmin }}"> Доступ </a>
+                                <a id="link_7" class="mt-1" href="/Setting/Automation/{{$accountId}}?isAdmin={{ request()->isAdmin }}"> Автоматизация </a>
                             </div>
-                            <a id="link_7" class="mt-1" href="/kassa/change/{{$accountId}}?isAdmin={{ request()->isAdmin }}"> Смена </a>
+                            <a id="link_8" class="mt-1" href="/kassa/change/{{$accountId}}?isAdmin={{ request()->isAdmin }}"> Смена </a>
                         @endif
                     @endif
                     <button class="mt-1 dropdown-btn"> Помощь <i class="fa fa-caret-down"></i> </button>
@@ -44,7 +45,7 @@
         let item = '@yield('item')'
 
         window.document.getElementById(item).classList.add('active_sprint')
-        if (item.replace(/[^+\d]/g, '') > 1 && item.replace(/[^+\d]/g, '') <= 6){
+        if (item.replace(/[^+\d]/g, '') > 1 && item.replace(/[^+\d]/g, '') <= 7){
            this_click(window.document.getElementById('btn_1'))
         }
 

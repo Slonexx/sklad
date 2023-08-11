@@ -40,7 +40,16 @@ class MsClient{
         $res = $this->client->put($url,[
             'Accept' => 'application/json',
             'body' => json_encode($body),
-         ]);
-         return json_decode($res->getBody());
+        ]);
+        return json_decode($res->getBody());
     }
+
+    public function delete($url, $body){
+        $res = $this->client->delete($url,[
+            'Accept' => 'application/json',
+            'body' => json_encode($body),
+        ]);
+        return json_decode($res->getBody());
+    }
+
 }

@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Setting;
 use App\Clients\MsClient;
 use App\Http\Controllers\BD\getAccessByAccountId;
 use App\Http\Controllers\BD\getMainSettingBD;
+use App\Http\Controllers\Config\getSettingVendorController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\getData\getDevices;
 use App\Services\workWithBD\DataBaseService;
 use GuzzleHttp\Exception\BadResponseException;
 use Illuminate\Http\Client\Pool;
@@ -30,7 +32,7 @@ class AccessController extends Controller
             ]);
         }
 
-        if ( array_key_exists(0, $Workers->access) ){ $Workers = null;
+        if ( array_key_exists(0, $Workers->access) ){ $Workers = '';
         } else $Workers = $Workers->access;
 
 
@@ -45,41 +47,24 @@ class AccessController extends Controller
                 'message' => $e->getResponse()->getBody()->getContents()
             ]);
         }
-        $security = [];
 
 
-        $urls = [];
+
         foreach ($Body_employee as $id=>$item){
-            $url_security = $url_employee.'/'.$item->id.'/security';
-            $urls [] = $url_security;
+            $json = $Client->get( $url_employee.'/'.$item->id.'/security');
+            if (property_exists($json, 'role')) {
+                if (mb_substr ($json->role->meta->href, 53)== "cashier") {
+                    unset($Body_employee[$id]);
+                }
+            }
         }
 
-        $pools = function (Pool $pool) use ($urls,$tokenMs){
-            foreach ($urls as $url){
-                $arrPools [] = $pool->withToken($tokenMs)->get($url);
-            }
-            return $arrPools;
-        };
-
-        $responses = Http::pool($pools);
-        $count = 0;
-        foreach ($Body_employee as $id=>$item){
-            if ( isset($responses[$count]->object()->role) ){
-                $Body_security = $responses[$count]->object()->role;
-                $security[$item->id] = mb_substr ($Body_security->meta->href, 53);
-            } else {
-                $security[$item->id] = 'cashier';
-            }
-
-            $count++;
-        }
 
         return view('setting.access', [
             'accountId' => $accountId,
             'isAdmin' => $isAdmin,
             'message'=>$message,
             'employee' => $Body_employee,
-            'security' => $security,
             'workers' => $Workers,
         ]);
     }
