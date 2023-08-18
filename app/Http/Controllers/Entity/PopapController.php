@@ -233,15 +233,8 @@ class PopapController extends Controller
             'positions' => $position,
         ];
 
+        app(devTicketService::class)->createTicket($body);
 
-
-        try {
-
-            return app(devTicketService::class)->createTicket($body);
-
-        } catch (BadResponseException $e){
-            return response()->json($e->getMessage());
-        }
 
     }
 }
