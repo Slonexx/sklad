@@ -185,7 +185,7 @@ class PopapController extends Controller
 
         try {
 
-            return app(TicketService::class)->createTicket($body);
+            return (new TicketService())->createTicket($body);
 
         } catch (BadResponseException $e){
             return response()->json($e->getMessage());

@@ -5,27 +5,22 @@ namespace App\Services\ticket;
 use App\Clients\KassClient;
 use App\Clients\MsClient;
 use App\Http\Controllers\BD\getMainSettingBD;
-use App\Services\AdditionalServices\DocumentService;
-use App\Services\MetaServices\MetaHook\AttributeHook;
 use GuzzleHttp\Exception\BadResponseException;
-use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 class devTicketService
 {
 
-    private AttributeHook $attributeHook;
-    private DocumentService $documentService;
     private MsClient $msClient;
     private getMainSettingBD $Setting;
     private KassClient $kassClient;
 
-    public function __construct(AttributeHook $attributeHook, DocumentService $documentService){
-        $this->attributeHook = $attributeHook;
-        $this->documentService = $documentService;
+    public function __construct(){
+
     }
 
 
-    public function createTicket($data): \Illuminate\Http\JsonResponse
+    public function createTicket($data)
     {
         $accountId = $data['accountId'];
         $id_entity = $data['id_entity'];
@@ -58,49 +53,8 @@ class devTicketService
 
         $Body = $this->setBodyToPostClient($id_entity, $entity_type, $money_card, $money_cash, $money_mobile, $payType, $total, $positions);
 
-        if (isset($Body['Status'])) { return response()->json($Body['Message']); }
+        dd($Body);
 
-        dd($Body, json_encode($Body));
-
-        try {
-            $postTicket = $this->kassClient->ticket($Body);
-
-            $result = json_decode(json_encode([
-                'data' => [
-                    'id' => $postTicket->data->ticket->id,
-                    'receipt_number' => $postTicket->data->ticket->receipt_number,
-                    'link' => $postTicket->data->ticket->link,
-                ],
-                'check' => $postTicket->data->check
-            ]));
-
-            $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
-            //dd($Body, $oldBody, $putBody);
-            $put =  $this->msClient->put('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, $putBody);
-
-            if ($payType == 'return'){
-                $this->createReturnDocument($put, $postTicket, $putBody, $entity_type);
-                $put =  $this->msClient->put('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, [
-                    'description' => $this->descriptionToCreate($oldBody, $postTicket, 'Возврат, фискальный номер: '),
-                ]);
-            }
-            if ($this->Setting->paymentDocument != null ){
-                $this->createPaymentDocument($this->Setting->paymentDocument, $entity_type, $put, $Body['payments']);
-            }
-
-            return response()->json([
-                'status'    => 'Ticket created',
-                'code'      => 200,
-                'postTicket' => $result,
-            ]);
-        } catch (BadResponseException  $e){
-            return response()->json([
-                'status'    => 'error',
-                'code'      => $e->getCode(),
-                'errors'    => json_decode($e->getResponse()->getBody()->getContents(), true),
-                'Body'      => $Body,
-            ]);
-        }
 
     }
 
@@ -125,11 +79,11 @@ class devTicketService
 
 
         $result = [
-           "type" => $type,
-           "sale_section_id" => (int) $this->Setting->sale_point_id,
-           "items" => $items,
-           "payments" => $payments,
-           "iin" => $iin,
+            "type" => $type,
+            "sale_section_id" => (int) $this->Setting->sale_point_id,
+            "items" => $items,
+            "payments" => $payments,
+            "iin" => $iin,
         ];
 
         if ($result['iin'] == null){
@@ -193,10 +147,10 @@ class devTicketService
                         foreach ($item_2->trackingCodes as $code){
                             $result[] = [
                                 'name' => (string) str_replace('+', ' ', $item->name),
-                                'quantity' => (float) round($item->quantity, 3),
-                                'price' => (float) round($item->price, 2),
+                                'quantity' => round($item->quantity, 3),
+                                'price' => round($item->price, 2),
 
-                                'discount' =>(float) round($discount, 2),
+                                'discount' => round($discount, 2),
                                 'excise_stamp' =>(string) $code->cis,
                                 'vat_type' => (int) $TaxPercent,
 
@@ -212,10 +166,10 @@ class devTicketService
             else {
                 $result[$id] = [
                     'name' => (string) str_replace('+', ' ', $item->name),
-                    'quantity' => (float) round($item->quantity, 3),
-                    'price' => (float) round($item->price, 2),
+                    'quantity' =>  round($item->quantity, 3),
+                    'price' => round($item->price, 2),
 
-                    'discount' =>(float) round($discount, 2),
+                    'discount' => round($discount, 2),
 
                     'vat_type' => (int) $TaxPercent,
 
@@ -238,7 +192,7 @@ class devTicketService
         return $result;
     }
 
-    private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody, mixed $positionsBody): array
+    private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody): array
     {
         $result = null;
         $check_attributes_in_value_name = false;
@@ -394,8 +348,8 @@ class devTicketService
                                 'metadataHref' => $item->meta->metadataHref,
                                 'type' => $item->meta->type,
                                 'mediaType' => $item->meta->mediaType,
-                                ],
-                        ];
+                            ],
+                            ];
                     }
                 }
 
@@ -496,13 +450,13 @@ class devTicketService
                 break;
             }
             default:{
-               break;
+                break;
             }
         }
 
     }
 
-    private function createReturnDocument(mixed $newBody, mixed $putBody, mixed $oldBody, mixed $entity_type)
+    private function createReturnDocument(mixed $newBody, mixed $putBody, mixed $oldBody, mixed $entity_type): void
     {
         if ($entity_type != 'salesreturn') {
             $attributes_item =  $this->msClient->get('https://online.moysklad.ru/api/remap/1.2/entity/salesreturn/metadata/attributes/')->rows;
@@ -624,7 +578,7 @@ class devTicketService
 
             try {
                 $this->msClient->post($url, $body);
-            } catch (BadResponseException $exception){
+            } catch (BadResponseException){
 
             }
         }
@@ -637,14 +591,14 @@ class devTicketService
             $OldMessage = $oldBody->description.PHP_EOL;
         }
 
-        return (string) $OldMessage.'['.( (int) date('H') + 6 ).date(':i:s').' '. date('Y-m-d') .'] '. $message.$postTicket->data->ticket->receipt_number ;
+        return $OldMessage .'['.( (int) date('H') + 6 ).date(':i:s').' '. date('Y-m-d') .'] '. $message.$postTicket->data->ticket->receipt_number ;
     }
 
-    private function codeUOM($UOM): \Illuminate\Http\JsonResponse|int|null
+    private function codeUOM($UOM): JsonResponse|int|null
     {
         try {
-           return $this->kassClient->unit($UOM);
-        } catch (BadResponseException $e){
+            return $this->kassClient->unit($UOM);
+        } catch (BadResponseException){
             return null;
         }
     }

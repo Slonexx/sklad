@@ -5,27 +5,22 @@ namespace App\Services\ticket;
 use App\Clients\KassClient;
 use App\Clients\MsClient;
 use App\Http\Controllers\BD\getMainSettingBD;
-use App\Services\AdditionalServices\DocumentService;
-use App\Services\MetaServices\MetaHook\AttributeHook;
 use GuzzleHttp\Exception\BadResponseException;
-use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 class TicketService
 {
 
-    private AttributeHook $attributeHook;
-    private DocumentService $documentService;
     private MsClient $msClient;
     private getMainSettingBD $Setting;
     private KassClient $kassClient;
 
-    public function __construct(AttributeHook $attributeHook, DocumentService $documentService){
-        $this->attributeHook = $attributeHook;
-        $this->documentService = $documentService;
+    public function __construct(){
+
     }
 
 
-    public function createTicket($data): \Illuminate\Http\JsonResponse
+    public function createTicket($data): JsonResponse
     {
         $accountId = $data['accountId'];
         $id_entity = $data['id_entity'];
@@ -72,7 +67,7 @@ class TicketService
                 'check' => $postTicket->data->check
             ]));
 
-            $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
+            $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody);
             //dd($Body, $oldBody, $putBody);
             $put =  $this->msClient->put('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, $putBody);
 
@@ -191,10 +186,10 @@ class TicketService
                         foreach ($item_2->trackingCodes as $code){
                             $result[] = [
                                 'name' => (string) str_replace('+', ' ', $item->name),
-                                'quantity' => (float) round($item->quantity, 3),
-                                'price' => (float) round($item->price, 2),
+                                'quantity' => round($item->quantity, 3),
+                                'price' => round($item->price, 2),
 
-                                'discount' =>(float) round($discount, 2),
+                                'discount' => round($discount, 2),
                                 'excise_stamp' =>(string) $code->cis,
                                 'vat_type' => (int) $TaxPercent,
 
@@ -210,10 +205,10 @@ class TicketService
             else {
                 $result[$id] = [
                     'name' => (string) str_replace('+', ' ', $item->name),
-                    'quantity' => (float) round($item->quantity, 3),
-                    'price' => (float) round($item->price, 2),
+                    'quantity' =>  round($item->quantity, 3),
+                    'price' => round($item->price, 2),
 
-                    'discount' =>(float) round($discount, 2),
+                    'discount' => round($discount, 2),
 
                     'vat_type' => (int) $TaxPercent,
 
@@ -236,7 +231,7 @@ class TicketService
         return $result;
     }
 
-    private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody, mixed $positionsBody): array
+    private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody): array
     {
         $result = null;
         $check_attributes_in_value_name = false;
@@ -500,7 +495,7 @@ class TicketService
 
     }
 
-    private function createReturnDocument(mixed $newBody, mixed $putBody, mixed $oldBody, mixed $entity_type)
+    private function createReturnDocument(mixed $newBody, mixed $putBody, mixed $oldBody, mixed $entity_type): void
     {
         if ($entity_type != 'salesreturn') {
             $attributes_item =  $this->msClient->get('https://online.moysklad.ru/api/remap/1.2/entity/salesreturn/metadata/attributes/')->rows;
@@ -622,7 +617,7 @@ class TicketService
 
             try {
                 $this->msClient->post($url, $body);
-            } catch (BadResponseException $exception){
+            } catch (BadResponseException){
 
             }
         }
@@ -635,14 +630,14 @@ class TicketService
             $OldMessage = $oldBody->description.PHP_EOL;
         }
 
-        return (string) $OldMessage.'['.( (int) date('H') + 6 ).date(':i:s').' '. date('Y-m-d') .'] '. $message.$postTicket->data->ticket->receipt_number ;
+        return $OldMessage .'['.( (int) date('H') + 6 ).date(':i:s').' '. date('Y-m-d') .'] '. $message.$postTicket->data->ticket->receipt_number ;
     }
 
-    private function codeUOM($UOM): \Illuminate\Http\JsonResponse|int|null
+    private function codeUOM($UOM): JsonResponse|int|null
     {
         try {
            return $this->kassClient->unit($UOM);
-        } catch (BadResponseException $e){
+        } catch (BadResponseException){
             return null;
         }
     }
