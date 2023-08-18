@@ -160,7 +160,7 @@ class PopapController extends Controller
 
         $positions =  json_decode($data['position']) ;
         $position = null;
-        foreach ($positions as $id=>$item){
+        foreach ($positions as $item){
 
             if ($item != null){
                 $position[] = $item;
@@ -187,7 +187,7 @@ class PopapController extends Controller
 
             return app(TicketService::class)->createTicket($body);
 
-        } catch (\Throwable $e){
+        } catch (BadResponseException $e){
             return response()->json($e->getMessage());
         }
 
