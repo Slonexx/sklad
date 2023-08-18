@@ -53,6 +53,8 @@ class TicketService
 
         $Body = $this->setBodyToPostClient($id_entity, $entity_type, $money_card, $money_cash, $money_mobile, $payType, $total, $positions);
 
+        dd($Body);
+
         if (isset($Body['Status'])) { return response()->json($Body['Message']); }
 
         try {
