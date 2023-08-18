@@ -67,7 +67,7 @@ class TicketService
                 'check' => $postTicket->data->check
             ]));
 
-            $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody);
+            $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
             //dd($Body, $oldBody, $putBody);
             $put =  $this->msClient->put('https://online.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, $putBody);
 
@@ -100,8 +100,6 @@ class TicketService
 
     private function setBodyToPostClient(mixed $id_entity, mixed $entity_type, mixed $money_card, mixed $money_cash, mixed $money_mobile, mixed $payType, mixed $total, mixed $positions): array
     {
-
-        //dd($this->Setting, $id_entity, $entity_type, $money_card, $money_cash, $payType, $total, $positions);
 
         $type = $this->getOperation($payType);
 
@@ -231,7 +229,7 @@ class TicketService
         return $result;
     }
 
-    private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody): array
+    private function putBodyMS($entity_type, mixed $Body, mixed $postTicket, mixed $oldBody, mixed $positionsBody): array
     {
         $result = null;
         $check_attributes_in_value_name = false;
@@ -247,10 +245,12 @@ class TicketService
         } else $check_attributes_in_value_name = true;
 
         $Result_attributes = $this->setAttributesToPutBody($Body, $postTicket, $check_attributes_in_value_name, $attributes);
+        $positions = $this->msClient->get($oldBody->positions->meta->href)->rows;
+        $Resul_positions = $this->setPositionsToPutBody($postTicket, $positions, $positionsBody);
         $result['description'] = $this->descriptionToCreate($oldBody, $postTicket, 'Продажа, Фискальный номер: ');
 
         if ($Result_attributes != null){ $result['attributes'] = $Result_attributes; }
-
+        if ($Resul_positions != null){ $result['positions'] = $Resul_positions; }
         return $result;
     }
 
@@ -532,7 +532,6 @@ class TicketService
                         'value' => true,
                     ];
                 }
-
             }
 
             foreach ($oldBody['positions'] as $item) {

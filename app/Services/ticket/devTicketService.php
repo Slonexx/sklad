@@ -52,7 +52,6 @@ class devTicketService
 
 
         $Body = $this->setBodyToPostClient($id_entity, $entity_type, $money_card, $money_cash, $money_mobile, $payType, $total, $positions);
-
         dd($Body);
 
 
@@ -470,7 +469,7 @@ class devTicketService
                             'type' => $item->meta->type,
                             'mediaType' => $item->meta->mediaType,
                         ],
-                        'value' => $putBody->data->ticket->receipt_number,
+                        'value' => "2312312",
                     ];
                 }
                 if ($item->name == 'Ссылка для QR-кода (ТИС Prosklad)'){
@@ -480,7 +479,7 @@ class devTicketService
                             'type' => $item->meta->type,
                             'mediaType' => $item->meta->mediaType,
                         ],
-                        'value' => $putBody->data->ticket->link,
+                        'value' => "2312312",
                     ];
                 }
                 if ($item->name == 'Фискализация (ТИС Prosklad)'){
@@ -494,11 +493,6 @@ class devTicketService
                     ];
                 }
 
-            }
-
-            foreach ($oldBody['positions'] as $item) {
-                unset($item['id']);
-                $positions[] = $item;
             }
 
             $url = 'https://online.moysklad.ru/api/remap/1.2/entity/salesreturn';
