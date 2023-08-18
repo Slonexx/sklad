@@ -63,7 +63,7 @@ Route::post('/Popup/{object}/send', [PopapController::class, 'sendPopup']);
 Route::get('/Popup/print/{accountId}/{entity_type}/{object}', [PrintController::class, 'PopupPrint']);
 
 
-
+Route::post('/DevPopup/{object}/send', [PopapController::class, 'sendDevPopup']);
 
 
 

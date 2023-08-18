@@ -6,6 +6,7 @@ use App\Clients\MsClient;
 use App\Http\Controllers\BD\getMainSettingBD;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\TicketController;
+use App\Services\ticket\devTicketService;
 use App\Services\ticket\TicketService;
 use GuzzleHttp\Exception\BadResponseException;
 use Illuminate\Http\Request;
@@ -187,6 +188,58 @@ class PopapController extends Controller
             return app(TicketService::class)->createTicket($body);
 
         } catch (\Throwable $e){
+            return response()->json($e->getMessage());
+        }
+
+    }
+
+    public function sendDevPopup(Request $request): \Illuminate\Http\JsonResponse
+    {
+
+        $data = $request->all();
+
+        $accountId = $data['accountId'];
+        $object_Id = $data['object_Id'];
+        $entity_type = $data['entity_type'];
+
+        if ($data['money_card'] === null) $money_card = 0;
+        else $money_card = $data["money_card"];
+        if ($data['money_cash'] === null) $money_cash = 0;
+        else $money_cash = $data['money_cash'];
+        $pay_type = $data['pay_type'];
+
+        $total = $data['total'];
+
+        $positions =  json_decode($data['position']) ;
+        $position = null;
+        foreach ($positions as $id=>$item){
+
+            if ($item != null){
+                $position[] = $item;
+            } else continue;
+        }
+
+        $body = [
+            'accountId' => $accountId,
+            'id_entity' => $object_Id,
+            'entity_type' => $entity_type,
+
+            'money_card' => $money_card,
+            'money_cash' => $money_cash,
+            'pay_type' => $pay_type,
+
+            'total' => $total,
+
+            'positions' => $position,
+        ];
+
+
+
+        try {
+
+            return app(devTicketService::class)->createTicket($body);
+
+        } catch (BadResponseException $e){
             return response()->json($e->getMessage());
         }
 
