@@ -93,9 +93,7 @@ class WebhookMSController extends Controller
                 $start['entity'] = true;
             }
 
-            dd(in_array("state", $events[0]['updatedFields']));
-
-            if ($state->id == $item['status'] and empty($events[0]['updatedFields']['state'])) {
+            if ($state->id == $item['status'] and in_array("state", $events[0]['updatedFields'])) {
                 $start['state'] = true;
             }
 
