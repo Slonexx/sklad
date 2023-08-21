@@ -42,8 +42,6 @@ class WebhookMSController extends Controller
                 'message' => $this->returnMessage("2023-00-00 00:00:00", "Отсутствует auditContext, (изменений не было), скрипт прекращён!"),
             ]);
         }
-
-
         if (empty($events[0]['updatedFields'])) {
             return response()->json([
                 'code' => 203,
@@ -80,7 +78,7 @@ class WebhookMSController extends Controller
 
         if (property_exists($objectBody, 'attributes')) {
             foreach ($objectBody->attributes as $item){
-                if ($item->name == 'Фискализация (WebKassa)' and $item->value){
+                if ($item->name == 'Фискализация (ТИС Prosklad)' and $item->value){
                     return response()->json([
                         'code' => 203,
                         'message' => $this->returnMessage($auditContext['moment'], "Фискальный чек уже создан"),
@@ -94,6 +92,9 @@ class WebhookMSController extends Controller
             if ($item['entity'] == "0") {
                 $start['entity'] = true;
             }
+
+            dd(empty($events[0]['updatedFields']['state']));
+
             if ($state->id == $item['status'] and empty($events[0]['updatedFields']['state'])) {
                 $start['state'] = true;
             }
