@@ -302,7 +302,7 @@ class TicketService
         return $Result_attributes;
     }
 
-    private function setPositionsToPutBody(mixed $positions, mixed $positionsBody): array
+    private function setPositionsToPutBody(mixed $postTicket, mixed $positions, mixed $positionsBody): array
     {   $result = null;
         $sort = null;
         foreach ($positionsBody as $id=>$one){
