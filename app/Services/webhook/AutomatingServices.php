@@ -25,6 +25,7 @@ class AutomatingServices
     public function initialization(mixed $ObjectBODY, mixed $BDFFirst): array
     {
         $accountId = $BDFFirst['accountId'];
+        dd('no');
         $this->attributeHook = new AttributeHook();
         $this->setting = new getMainSettingBD($BDFFirst['accountId']);
         $this->msClient = new MsClient($this->setting->tokenMs);
@@ -526,20 +527,20 @@ class AutomatingServices
     public function writeToAttrib(mixed $createBody, mixed $postTicket)
     {
 
-        $meta1 = $this->getMeta("фискальный номер (ТИС)");
-        $meta2 = $this->getMeta("Ссылка для QR-кода (ТИС)");
-        $meta3 = $this->getMeta("Фискализация (ТИС)");
-        $meta4 = $this->getMeta("ID (ТИС)");
+        $meta1 = $this->getMeta("фискальный номер (ТИС Prosklad)");
+        $meta2 = $this->getMeta("Ссылка для QR-кода (ТИС Prosklad)");
+        $meta3 = $this->getMeta("Фискализация (ТИС Prosklad)");
+        $meta4 = $this->getMeta("ID (ТИС Prosklad)");
 
         $body = [
             "attributes" => [
                 0 => [
                     "meta" => $meta1,
-                    "value" => "" . $postTicket->data->fixed_check,
+                    "value" => "" . $postTicket->data->ticket->receipt_number,
                 ],
                 1 => [
                     "meta" => $meta2,
-                    "value" => $postTicket->data->link,
+                    "value" => $postTicket->data->ticket->link,
                 ],
                 2 => [
                     "meta" => $meta3,
@@ -547,7 +548,7 @@ class AutomatingServices
                 ],
                 3 => [
                     "meta" => $meta4,
-                    "value" => (string) $postTicket->data->id,
+                    "value" => (string) $postTicket->data->ticket->id,
                 ],
             ],
         ];
