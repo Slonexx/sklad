@@ -89,8 +89,6 @@ class WebhookMSController extends Controller
             }
         }
 
-        //dd($msClient->get($objectBody->salesChannel->meta->href));
-
         foreach ($multiDimensionalArray as $item) {
             $start = ['entity' => false,'state' => false, 'saleschannel' => false, 'project' => false];
             if ($item['entity'] == "0") {

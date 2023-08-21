@@ -53,7 +53,7 @@ class AutomatingServices
                     $exception->getResponse()->getBody()->getContents(),
                     "BODY",
                     "==========================================",
-                    $body,
+                    json_decode($body),
                 ];
             }
 
