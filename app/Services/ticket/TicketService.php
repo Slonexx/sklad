@@ -574,7 +574,7 @@ class TicketService
                         'mediaType' => $newBody->organizationAccount->meta->mediaType,
                     ]
                 ];
-            } else { unlink($body['organizationAccount']); }
+            }
 
             if (isset($newBody->store)){
                 $body['store'] = [
