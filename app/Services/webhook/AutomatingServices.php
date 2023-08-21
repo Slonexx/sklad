@@ -5,11 +5,9 @@ namespace App\Services\webhook;
 use App\Clients\KassClient;
 use App\Clients\MsClient;
 use App\Http\Controllers\BD\getMainSettingBD;
-use App\Http\Controllers\globalObjectController;
-use App\Services\MetaServices\MetaHook\AttributeHook;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ClientException;
-use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 
 class AutomatingServices
@@ -20,17 +18,14 @@ class AutomatingServices
     private getMainSettingBD $setting;
     private mixed $settingAutomation;
     private mixed $msOldBodyEntity;
-    private AttributeHook $attributeHook;
 
     public function initialization(mixed $ObjectBODY, mixed $BDFFirst): array
     {
         $accountId = $BDFFirst['accountId'];
-        dd('no');
-        $this->attributeHook = new AttributeHook();
-        $this->setting = new getMainSettingBD($BDFFirst['accountId']);
+        $this->setting = new getMainSettingBD($accountId);
         $this->msClient = new MsClient($this->setting->tokenMs);
 
-        $this->kassClient = new KassClient($BDFFirst['accountId']);
+        $this->kassClient = new KassClient($accountId);
 
         $this->msOldBodyEntity = $ObjectBODY;
         $this->settingAutomation = json_decode(json_encode($BDFFirst));
@@ -59,7 +54,7 @@ class AutomatingServices
             }
 
             try {
-                $this->writeToAttrib($body, $response);
+                $this->writeToAttrib($response);
             } catch (ClientException $exception) {
                 return [
                     "ERROR",
@@ -496,7 +491,7 @@ class AutomatingServices
     }
 
 
-    private function getUnitCode(mixed $product)
+    private function getUnitCode(mixed $product): JsonResponse|int|null
     {
 
         $uomCode = 796;
@@ -518,13 +513,13 @@ class AutomatingServices
 
         try {
             return $this->kassClient->unit($uomCode);
-        } catch (BadResponseException $e){
+        } catch (BadResponseException){
             return null;
         }
     }
 
 
-    public function writeToAttrib(mixed $createBody, mixed $postTicket)
+    public function writeToAttrib(mixed $postTicket)
     {
 
         $meta1 = $this->getMeta("фискальный номер (ТИС Prosklad)");
