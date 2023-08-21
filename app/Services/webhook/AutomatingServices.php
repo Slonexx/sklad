@@ -400,13 +400,13 @@ class AutomatingServices
             if (property_exists($row, 'trackingCodes') or isset($item_2->trackingCodes) ){
                 foreach ($jsonPositions->trackingCodes as $code){
                     $positions[] = [
-                        'name' => (string) str_replace('+', ' ', $row->name),
-                        'quantity' => (float) round($row->quantity, 3),
-                        'price' => (float) round($row->price, 2),
+                        'name' => (string) str_replace('+', ' ', $product->name),
+                        'quantity' =>  round($row->quantity, 3),
+                        'price' => round($row->price, 2),
 
-                        'discount' =>(float) round($discount, 2),
+                        'discount' => round($discount, 2),
                         'excise_stamp' =>(string) $code->cis,
-                        'vat_type' => (int) $is_nds,
+                        'vat_type' => $is_nds,
 
                         'unit_id' => (int) $this->getUnitCode($product),
                         'sale_section_id' => (int) $this->setting->sale_point_id,
@@ -415,12 +415,12 @@ class AutomatingServices
             }
             else {
                 $positions[] = [
-                    'name' => (string) str_replace('+', ' ', $row->name),
-                    'quantity' => (float) round($row->quantity, 3),
-                    'price' => (float) round($row->price, 2),
+                    'name' => (string) str_replace('+', ' ', $product->name),
+                    'quantity' => round($row->quantity, 3),
+                    'price' => round($row->price, 2),
 
-                    'discount' =>(float) round($discount, 2),
-                    'vat_type' => (int) $is_nds,
+                    'discount' => round($discount, 2),
+                    'vat_type' =>  $is_nds,
 
                     'unit_id' => (int) $this->getUnitCode($product),
                     'sale_section_id' => (int) $this->setting->sale_point_id,
