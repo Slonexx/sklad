@@ -402,7 +402,7 @@ class AutomatingServices
                     $positions[] = [
                         'name' => (string) str_replace('+', ' ', $product->name),
                         'quantity' =>  round($row->quantity, 3),
-                        'price' => round($row->price, 2),
+                        'price' => round($row->price, 2)/100,
 
                         'discount' => round($discount, 2),
                         'excise_stamp' =>(string) $code->cis,
@@ -417,7 +417,7 @@ class AutomatingServices
                 $positions[] = [
                     'name' => (string) str_replace('+', ' ', $product->name),
                     'quantity' => round($row->quantity, 3),
-                    'price' => round($row->price, 2),
+                    'price' => round($row->price, 2)/100,
 
                     'discount' => round($discount, 2),
                     'vat_type' =>  $is_nds,
