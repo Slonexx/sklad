@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Clients\MsClient;
 use App\Http\Controllers\Config\getSettingVendorController;
-use App\Http\Controllers\Controller;
 use App\Models\AutomationModel;
 use App\Services\webhook\AutomatingServices;
 use GuzzleHttp\Exception\BadResponseException;
