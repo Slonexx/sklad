@@ -31,7 +31,7 @@ class PopapController extends Controller
         $accountId = $request->accountId;
         $Setting = new getMainSettingBD($accountId);
 
-        $url = "https://online.moysklad.ru/api/remap/1.2/entity/".$object."/".$object_Id;
+        $url = "https://api.moysklad.ru/api/remap/1.2/entity/".$object."/".$object_Id;
 
 
         $Client = new MsClient($Setting->tokenMs);
