@@ -170,50 +170,21 @@ class TicketService
     {
         $result = null;
 
-        foreach ($positions as $id => $item){
+        if ($typeObject == 'demand') { $demandPos = $this->msClient->get(($this->msClient->get('https://api.moysklad.ru/api/remap/1.2/entity/' . $typeObject . '/' . $idObject))->positions->meta->href)->rows; }
+
+        foreach ($positions as $id => $item) {
             $TaxPercent = (float) trim($item->is_nds, '%');
             $discount = trim($item->discount, '%');
             if ($TaxPercent == 'без НДС' or $TaxPercent == "0%" or $TaxPercent == 0 or $TaxPercent == "0"){ $TaxPercent = 0; $TaxType = 0; } else $TaxType = 1;
-            if ($discount > 0){ $discount = round(($item->price * $item->quantity * ($discount/100)), 2); }
+            if ($discount > 0) { $discount = round(($item->price * $item->quantity * ($discount / 100)), 2); }
+
             if ($typeObject == 'demand'){
-                $demand =  $this->msClient->get('https://api.moysklad.ru/api/remap/1.2/entity/' . $typeObject . '/' . $idObject);
-                $demandPos =  $this->msClient->get($demand->positions->meta->href)->rows;
 
-                foreach ($demandPos as $item_2){
-                    if ( $item->id == $item_2->id and isset($item_2->trackingCodes) ){
-                        foreach ($item_2->trackingCodes as $code){
-                            $result[] = [
-                                'name' => (string) str_replace('+', ' ', $item->name),
-                                'quantity' => round($item->quantity, 3),
-                                'price' => round($item->price, 2),
+                if (isset($demandPos[$id]->trackingCodes)){
+                    foreach ($demandPos[$id]->trackingCodes as $code){ $result[] = $this->itemPosition($item->name, $item->price, 1, $discount, $item->UOM, $TaxPercent, $code->cis) ; }
+                } else { $result[] = $this->itemPosition($item->name, $item->price, $item->quantity, $discount, $item->UOM, $TaxPercent, '') ; }
 
-                                'discount' => round($discount, 2),
-                                'excise_stamp' =>(string) $code->cis,
-                                'vat_type' => (int) $TaxPercent,
-
-                                'unit_id' => (int) $this->codeUOM($item->UOM),
-                                'sale_section_id' => (int) $this->Setting->sale_point_id,
-
-                            ];
-                        }
-
-                    }
-                }
-            }
-            else {
-                $result[$id] = [
-                    'name' => (string) str_replace('+', ' ', $item->name),
-                    'quantity' =>  round($item->quantity, 3),
-                    'price' => round($item->price, 2),
-
-                    'discount' => round($discount, 2),
-
-                    'vat_type' => (int) $TaxPercent,
-
-                    'unit_id' => (int) $this->codeUOM($item->UOM),
-                    'sale_section_id' => (int) $this->Setting->sale_point_id,
-                ];
-            }
+            } else { $result[] = $this->itemPosition($item->name, $item->price, $item->quantity, $discount, $item->UOM, $TaxPercent, '') ; }
         }
 
         return $result;
@@ -641,5 +612,28 @@ class TicketService
         }
     }
 
+
+    private function itemPosition(string $name, float $price, float $quantity, float $discount, int $UOM, $TaxPercent, string $code): array
+    {
+
+        $item =  [
+            'name' => (string) str_replace('+', ' ', $name),
+            'quantity' => round($quantity, 3),
+            'price' => round($price, 2),
+
+            'discount' => round($discount, 2),
+            'excise_stamp' => $code,
+            'vat_type' => (int) $TaxPercent,
+
+            'unit_id' => (int) $this->codeUOM($UOM),
+            'sale_section_id' => (int) $this->Setting->sale_point_id,
+
+        ];
+
+        if ($code == "") {
+            unset($item['excise_stamp']);
+        }
+        return $item;
+    }
 
 }

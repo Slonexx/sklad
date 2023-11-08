@@ -134,7 +134,6 @@ class devTicketService
 
         if ($typeObject == 'demand') { $demandPos = $this->msClient->get(($this->msClient->get('https://api.moysklad.ru/api/remap/1.2/entity/' . $typeObject . '/' . $idObject))->positions->meta->href)->rows; }
 
-
         foreach ($positions as $id => $item) {
             $TaxPercent = (float) trim($item->is_nds, '%');
             $discount = trim($item->discount, '%');
