@@ -178,6 +178,8 @@ class devTicketService
             }
         }
 
+        dd($result);
+
         return $result;
     }
 

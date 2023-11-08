@@ -193,7 +193,7 @@ class PopapController extends Controller
 
     }
 
-    public function sendDevPopup(Request $request): \Illuminate\Http\JsonResponse
+    public function sendDevPopup(Request $request)
     {
 
         $data = $request->all();
@@ -210,11 +210,11 @@ class PopapController extends Controller
 
         $total = $data['total'];
 
-        $positions =  json_decode($data['position']) ;
+        $positions = json_decode($data['position']);
         $position = null;
-        foreach ($positions as $id=>$item){
+        foreach ($positions as $id => $item) {
 
-            if ($item != null){
+            if ($item != null) {
                 $position[] = $item;
             } else continue;
         }
@@ -233,8 +233,7 @@ class PopapController extends Controller
             'positions' => $position,
         ];
 
-        app(devTicketService::class)->createTicket($body);
-
+        return (new devTicketService())->createTicket($body);
 
     }
 }
