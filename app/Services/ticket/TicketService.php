@@ -57,43 +57,64 @@ class TicketService
 
         try {
             $postTicket = $this->kassClient->ticket($Body);
+        } catch (BadResponseException $e){
+            return response()->json([
+                'status'    => 'error',
+                'code'      => $e->getCode(),
+                'errors'    => 'Ошибка отправка в ККМ: '.json_decode($e->getResponse()->getBody()->getContents(), true),
+                'Body'      => $Body,
+            ]);
+        }
 
-            $result = json_decode(json_encode([
+        try {
+            $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
+            $newBodyMSDocument =  $this->msClient->put('https://api.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, $putBody);
+        } catch (BadResponseException $e){
+            return response()->json([
+                'status'    => 'error',
+                'code'      => $e->getCode(),
+                'errors'    => 'Ошибка изменения документа в МС: '.json_decode($e->getResponse()->getBody()->getContents(), true),
+                'Body'      => $Body,
+                'postTicket'      => $postTicket,
+            ]);
+        }
+
+        $put = null;
+
+        try {
+            if ($payType == 'return'){
+                $this->createReturnDocument($newBodyMSDocument, $postTicket, $putBody, $entity_type);
+                $put =  $this->msClient->put('https://api.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, [
+                    'description' => $this->descriptionToCreate($oldBody, $postTicket, 'Возврат, фискальный номер: '),
+                ]);
+            }
+            if ($this->Setting->paymentDocument != null ){
+                $put = $this->createPaymentDocument($this->Setting, $entity_type, $newBodyMSDocument, $Body['payments']);
+            }
+        } catch (BadResponseException  $e){
+            return response()->json([
+                'status'    => 'error',
+                'code'      => $e->getCode(),
+                'errors'    => 'Ошибка создание платёжных документа в МС: '.json_decode($e->getResponse()->getBody()->getContents(), true),
+                'Body'      => $Body,
+            ]);
+        }
+
+        return response()->json([
+            'status'    => 'Ticket created',
+            'code'      => 200,
+            'postTicket' => json_decode(json_encode([
                 'data' => [
                     'id' => $postTicket->data->ticket->id,
                     'receipt_number' => $postTicket->data->ticket->receipt_number,
                     'link' => $postTicket->data->ticket->link,
                 ],
                 'check' => $postTicket->data->check
-            ]));
-
-            $putBody = $this->putBodyMS($entity_type, $Body, $postTicket, $oldBody, $positions);
-            //dd($Body, $oldBody, $putBody);
-            $put =  $this->msClient->put('https://api.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, $putBody);
-
-            if ($payType == 'return'){
-                $this->createReturnDocument($put, $postTicket, $putBody, $entity_type);
-                $put =  $this->msClient->put('https://api.moysklad.ru/api/remap/1.2/entity/'.$entity_type.'/'.$id_entity, [
-                    'description' => $this->descriptionToCreate($oldBody, $postTicket, 'Возврат, фискальный номер: '),
-                ]);
-            }
-            if ($this->Setting->paymentDocument != null ){
-                $this->createPaymentDocument($this->Setting, $entity_type, $put, $Body['payments']);
-            }
-
-            return response()->json([
-                'status'    => 'Ticket created',
-                'code'      => 200,
-                'postTicket' => $result,
-            ]);
-        } catch (BadResponseException  $e){
-            return response()->json([
-                'status'    => 'error',
-                'code'      => $e->getCode(),
-                'errors'    => json_decode($e->getResponse()->getBody()->getContents(), true),
-                'Body'      => $Body,
-            ]);
-        }
+            ])),
+            'Ticket' => $postTicket,
+            'New_body_MS_Document' => $newBodyMSDocument,
+            'Payment_document' => $put,
+        ]);
 
     }
 
@@ -301,7 +322,7 @@ class TicketService
 
     }
 
-    private function createPaymentDocument( mixed $document, string $entity_type, mixed $OldBody, mixed $payments): void
+    private function createPaymentDocument( mixed $document, string $entity_type, mixed $OldBody, mixed $payments)
     {
         switch ($document->paymentDocument){
             case "1": {
@@ -336,7 +357,7 @@ class TicketService
                             'linkedSum' => $OldBody->sum
                         ], ]
                 ];
-                $this->msClient->post($url, $body);
+                return $this->msClient->post($url, $body);
                 break;
             }
             case "2": {
@@ -389,7 +410,7 @@ class TicketService
                     'rate' => $rate
                 ];
                 if ($body['rate'] == null) unlink($body['rate']);
-                $this->msClient->post($url, $body);
+                return $this->msClient->post($url, $body);
                 break;
             }
             case "3": {
@@ -455,7 +476,7 @@ class TicketService
                         'rate' => $rate
                     ];
                     if ($body['rate'] == null) unlink($body['rate']);
-                    $this->msClient->post($url_to_body, $body);
+                    return $this->msClient->post($url_to_body, $body);
                 }
                 break;
             }
@@ -533,12 +554,13 @@ class TicketService
                         'rate' => $rate
                     ];
                     if ($body['rate'] == null) unset($body['rate']);
-                    $this->msClient->post($url_to_body, $body);
+                    return $this->msClient->post($url_to_body, $body);
                 }
                 break;
             }
-            default: break;
+            default:  return null; break;
         }
+        return null;
 
     }
 
