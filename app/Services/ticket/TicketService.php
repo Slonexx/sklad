@@ -440,7 +440,7 @@ class TicketService
                             'type' => $OldBody->agent->meta->type,
                             'mediaType' => $OldBody->agent->meta->mediaType,
                         ] ],
-                        'sum' => ($item['total']-$change) * 100,
+                        'sum' => ($item['sum']-$change) * 100,
                         'operations' => [
                             0 => [
                                 'meta'=> [
