@@ -397,7 +397,7 @@ class TicketService
                 $url_to_body = null;
                 foreach ($payments as $item){
                     $change = 0;
-                    if ($item['payment_type'] == 0){
+                    if ($item['payment_method'] == 0){
                         if ($entity_type != 'salesreturn') {
                             $url_to_body = $url . 'cashin';
                         } else {
@@ -464,7 +464,7 @@ class TicketService
                 $url_to_body = null;
                 foreach ($payments as $item){
                     $change = 0;
-                    if ($item['payment_type'] == 0){
+                    if ($item['payment_method'] == 0){
                         if ($entity_type != 'salesreturn') {
                             if ($document->OperationCash == 1) {
                                 $url_to_body = $url . 'cashin';
