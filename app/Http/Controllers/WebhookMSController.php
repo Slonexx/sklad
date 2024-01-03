@@ -37,23 +37,13 @@ class WebhookMSController extends Controller
 
         if (empty($request->auditContext)) {
             return response()->json([
-                'code' => 203,
+                'code' => 101,
                 'message' => $this->returnMessage("2023-00-00 00:00:00", "Отсутствует auditContext, (изменений не было), скрипт прекращён!"),
             ]);
         }
-        /*if ( strpos($request->auditContext['uid'], "kaspi-kz.fixcom") !== false ) {
-            return response()->json([
-                'code' => 203,
-                'message' => $this->returnMessage("2023-00-00 00:00:00", "Мы не работаем с fix (они плохие)"),
-            ]);
-        }*/
 
-        if (empty($events[0]['updatedFields'])) {
-            return response()->json([
-                'code' => 203,
-                'message' => $this->returnMessage($auditContext['moment'], "Отсутствует updatedFields, (изменений не было), скрипт прекращён!"),
-            ]);
-        }
+        if (empty($events[0]['updatedFields'])) return response()->json([ 'code' => 102, 'message' => $this->returnMessage($auditContext['moment'], "Отсутствует updatedFields, (изменений не было), скрипт прекращён!"), ]);
+
 
 
 
@@ -66,7 +56,7 @@ class WebhookMSController extends Controller
 
         if (empty($multiDimensionalArray)) {
             return response()->json([
-                'code' => 203,
+                'code' => 103,
                 'message' => $this->returnMessage($auditContext['moment'], "Отсутствует настройки автоматизации, скрипт прекращён!"),
             ]);
         }
@@ -75,9 +65,8 @@ class WebhookMSController extends Controller
             $objectBody = $msClient->get($events[0]['meta']['href']);
             $state = $msClient->get($objectBody->state->meta->href);
         } catch (BadResponseException $e) {
-            Log::error($e); // Борируем ошибку, чтобы отслеживать возможные проблемы
             return response()->json([
-                'code' => 203,
+                'code' => 1401,
                 'message' => $this->returnMessage($auditContext['moment'], $e->getMessage()),
             ]);
         }
@@ -93,45 +82,36 @@ class WebhookMSController extends Controller
             }
         }
 
+        $arraySetProEntity = [];
+        if ($events[0]['meta']['type'] == 'customerorder') $arraySetProEntity = ["0", ];
+        elseif ($events[0]['meta']['type'] == 'demand') $arraySetProEntity = ["1", ];
+        elseif ($events[0]['meta']['type'] == 'salesreturn') $arraySetProEntity = ["2", ];
+
+
+
         foreach ($multiDimensionalArray as $item) {
-            $start = ['entity' => false,'state' => false, 'saleschannel' => false, 'project' => false];
+            $start = ['entity' => in_array($item['entity'], $arraySetProEntity),'state' => false, 'saleschannel' => false, 'project' => false];
 
-            if (in_array($item['entity'], ["0", "1", "2", "3"])) {
-                $start['entity'] = true;
-            } else {
-                $start['entity'] = false;
-            }
+            if ($state->id == $item['status']) $start['state'] = in_array("state", $events[0]['updatedFields']);
 
-            if ($state->id == $item['status'] and in_array("state", $events[0]['updatedFields'])) {
-                $start['state'] = true;
-            }
+            if ($item['status'] == "0") $start['state'] = true;
 
-            if ($item['status'] == "0") {
-                $start['state'] = true;
-            }
 
             if ($item['project'] != "0" and property_exists($objectBody, 'project')) {
-
                 foreach (array_filter(explode('/', $item['project'])) as $_item) {
-                    if ($msClient->get($objectBody->project->meta->href)->id == $_item) {
-                        $start['project'] = true;
-                    }
+                    if ($msClient->get($objectBody->project->meta->href)->id == $_item)  $start['project'] = true;
                 }
+            } elseif ($item['project'] == '0' ) $start['project'] = true;
 
-            } else {
-                $start['project'] = true;
-            }
+
             if ($item['saleschannel'] != "0" and property_exists($objectBody, 'salesChannel')) {
 
                 foreach (array_filter(explode('/', $item['saleschannel'])) as $_item){
-                    if ($msClient->get($objectBody->salesChannel->meta->href)->id == $_item) {
-                        $start['saleschannel'] = true;
-                    }
+                    if ($msClient->get($objectBody->salesChannel->meta->href)->id == $_item) $start['saleschannel'] = true;
                 }
 
-            } else {
-                $start['saleschannel'] = true;
-            }
+            } elseif ($item['saleschannel'] == '0' ) $start['saleschannel'] = true;
+
 
             if ($this->allValuesTrue($start)) {
                 return response()->json([
@@ -143,7 +123,7 @@ class WebhookMSController extends Controller
         }
 
         return response()->json([
-            'code' => 203,
+            'code' => 105,
             'message' => $this->returnMessage($auditContext['moment'], "Конец скрипта, прошел по foreach, не нашел нужный скрипт"),
         ]);
     }

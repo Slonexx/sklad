@@ -528,7 +528,7 @@ class TicketService
                                     'mediaType' => $OldBody->meta->mediaType,
                                     'uuidHref' => $OldBody->meta->uuidHref,
                                 ],
-                                'linkedSum' => 0
+                                'linkedSum' => ($item['sum']-$change) * 100
                             ], ],
                         'rate' => $rate
                     ];
@@ -537,9 +537,7 @@ class TicketService
                 }
                 break;
             }
-            default:{
-               break;
-            }
+            default: break;
         }
 
     }
