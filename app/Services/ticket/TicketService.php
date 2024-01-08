@@ -499,8 +499,7 @@ class TicketService
                         }
                         if (isset($item['change'])) $change = $item['change'];
                     }
-                    else {
-                        if ($entity_type != 'salesreturn') {
+                    else if ($entity_type != 'salesreturn') {
                             if ($document->OperationCard == 1) {
                                 $url_to_body = $url . 'cashin';
                             }
@@ -511,7 +510,6 @@ class TicketService
                                 continue;
                             }
                         }
-                    }
 
                     $rate_body = $this->msClient->get("https://api.moysklad.ru/api/remap/1.2/entity/currency/")->rows;
                     $rate = null;
