@@ -75,7 +75,7 @@ class widgetController extends Controller
             return view( 'widget.Error', [
                 'status' => false,
                 'code' => 400,
-                'message' => json_decode($e->getResponse()->getBody()->getContents())->message,
+                'message' => json_decode($e->getResponse()->getBody()->getContents()),
             ] );
         }
 
