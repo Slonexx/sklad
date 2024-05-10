@@ -30,11 +30,7 @@
 
     <script>
         const hostWindow = window.parent
-        let app = @json($message);
-
-        if (app.length > 0) {
-            window.document.getElementById('errorMessage').innerText = JSON.stringify(app)
-        }
+        window.document.getElementById('errorMessage').innerHTML = JSON.stringify(@json($message))
 
         window.addEventListener("message", function(event) {
             const receivedMessage = event.data;
